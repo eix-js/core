@@ -1,0 +1,27 @@
+{
+  "name": "@eix/core",
+  "version": "1.0.0",
+  "description": "the core of the eix game engine",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mateiadrielrafael/eix-core.git"
+  },
+  "keywords": [
+    "engine",
+    "core",
+    "eix"
+  ],
+  "author": "Matei Adriel",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/Mateiadrielrafael/eix-core/issues"
+  },
+  "homepage": "https://github.com/Mateiadrielrafael/eix-core#readme",
+  "dependencies": {
+    "rxjs": "^6.4.0"
+  }
+}
