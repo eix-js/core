@@ -6,7 +6,6 @@
                 "types/*"
             ]
         },
-        "module":"commonjs",
         "removeComments": true,
         "sourceMap": true,
         "lib": [
@@ -21,7 +20,8 @@
         "downlevelIteration": true,
         "target": "ESNext",
         "outDir": "dist",
-        "declaration": true
+        "declaration": true,
+        "module":"es6"
     },
     "include": [
         "src"

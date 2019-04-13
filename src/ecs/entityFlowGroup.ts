@@ -1,10 +1,15 @@
-import { Observable, BehaviorSubject } from "rxjs"
-import { map, tap } from "rxjs/operators"
+import { Observable, BehaviorSubject, Subscription } from "rxjs"
+import { map, take } from "rxjs/operators"
 import { ECS } from "./ecs"
-import { componentName, ComponentMap } from "./interfaces";
+import { componentName, ComponentMap, Component } from "./interfaces";
 import { ComponentFlowGroup } from "./componentFlowGroup";
 
 export class entityFlowGroup {
+    /**
+     * used to prevent memory leaks
+     */
+    subscriptions: Subscription[] = []
+
     /**
      * used to make searching components easier
      * @param syncSource the source to sync the data to
@@ -31,22 +36,49 @@ export class entityFlowGroup {
     is(id: number): entityFlowGroup {
         return new entityFlowGroup(this.syncSource, this.flowSource.pipe(map(values => values.filter(entityId => entityId == id))));
     }
-    //TODO: remove
-    log() {
-        this.flowSource.subscribe(console.log);
+
+    /**
+     * Used to add a component to all entities selected
+     * @param components the components to add
+     */
+    addComponents(...components: Partial<Component<any>>[]) {
+        //create the components and stuff
+        const componentResults = this.syncSource.formComponents(...components)
+
+        //update it at the next change
+        const subscription = this.flowSource.pipe(
+            take(1)
+        ).subscribe((ids) => {
+            //iterate over all ids
+            ids.forEach(id => {
+                //appnd components
+                this.syncSource.entities.get(id).push(...componentResults)
+            })
+        })
+
+        //emit the change
+        this.syncSource.emit("change")
     }
 
-    get(...names:componentName[]):ComponentFlowGroup{
+    /**
+     * used to clear all subscriptions
+     */
+    dispose() {
+        //unsubscribe from everything
+        this.subscriptions.forEach(value => value.unsubscribe())
+    }
+
+    get(...names: componentName[]): ComponentFlowGroup {
         //create subject
         const subject = new BehaviorSubject<ComponentMap>(new Map())
 
         //subscirbe to the flowsource to get all ids
-        this.flowSource.subscribe((values) => {
+        const subscription = this.flowSource.subscribe((values) => {
             //create result map
             const result = new Map()
 
             //iterate trough all entity keys
-            for (let i of values){
+            for (let i of values) {
                 //get entity
                 const entity = this.syncSource.entities.get(i)
 
@@ -61,18 +93,21 @@ export class entityFlowGroup {
                 )
 
                 //finally set it into the map
-                result.set(i,ids)
+                result.set(i, ids)
             }
 
             //emit it to the subject
             subject.next(result)
         })
 
+        //save subscriptions for later disposing
+        this.subscriptions.push(subscription)
+
         //call change once to get the first set of result
         this.syncSource.emit("change")
 
         //return the component group
-        return new ComponentFlowGroup(this.syncSource,subject,this.flowSource)
+        return new ComponentFlowGroup(this.syncSource, subject, this.flowSource)
     }
 }
 

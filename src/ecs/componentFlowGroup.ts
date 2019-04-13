@@ -32,15 +32,10 @@ export class ComponentFlowGroup {
     }
 
     /**
-         * this wrapper is necessary or else the values in variable dont update properly
-         */
-    track(){
-        return {
-            result: this.tracked
-        }
-    }
-
-    trackResult(): TrackResults {
+     * gets the current values of the componnts
+     * @returns a trackResults objcect containing the components
+     */
+    private trackResult(): TrackResults {
         //unfold the component
         const unfolded = this.unfoldComponents()
 
@@ -55,6 +50,10 @@ export class ComponentFlowGroup {
         return unfolded
     }
 
+    /**
+     * the handler for the component proxy
+     * @param syncSource the main ecs to get the components from
+     */
     private static handler(syncSource: ECS): ProxyHandler<Component> {
         //ignore these
         const ignoredKeys: any[] = ["data", "name", "id"]
@@ -79,11 +78,37 @@ export class ComponentFlowGroup {
                 throw new Error(`
                     Cannot find property ${prop} on objcet ${JSON.stringify(target)}
                 `)
+            },
+            set: (target: any, key: any, value: any) => {
+                //handle simbols
+
+                if (typeof key == "symbol") {
+                    return true
+                }
+
+                //check if we should ignore the key
+                if (ignoredKeys.includes(key)) {
+                    //if we should ignore it, than we can continue as normal
+                    target[key] = value
+                    return true
+                }
+
+                //if we can find the key in data
+                else if (key in target.data) {
+                    //than reddirect it to data
+                    target.data[key] = value
+                    return true
+                }
+
+                //else throw an error
+                throw new Error(`
+                    Cannot set property ${key} as ${value} on objcet ${JSON.stringify(target)}
+                `)
             }
         }
     }
 
-    unfoldComponents(): UnfoldedComponent[] {
+    private unfoldComponents(): UnfoldedComponent[] {
         //create result array
         const result = []
 

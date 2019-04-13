@@ -2,8 +2,9 @@
   "name": "@eix/core",
   "version": "1.0.0",
   "description": "the core of the eix game engine",
-  "main": "src/main.ts",
+  "main": "dist/main",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +22,7 @@
     "url": "https://github.com/Mateiadrielrafael/eix-core/issues"
   },
   "homepage": "https://github.com/Mateiadrielrafael/eix-core#readme",
+  "devDependencies": {},
   "dependencies": {
     "rxjs": "^6.4.0"
   }
