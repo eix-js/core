@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Mateiadrielrafael/eix-core.git"
+    "url": "git+https://github.com/eix-js/eix-core"
   },
   "keywords": [
     "engine",
