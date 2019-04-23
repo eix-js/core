@@ -5,7 +5,7 @@
   "main": "dist/main",
   "scripts": {
     "build": "tsc",
-    "test": "mocha || true"
+    "test": "nyc mocha"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
     "@types/node": "^11.13.7",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
+    "nyc": "^14.0.0",
     "source-map-support": "^0.5.12",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.4"
