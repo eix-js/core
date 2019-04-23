@@ -1,2 +1,1 @@
-export * from "./ecs/ecs"
-// export * from "./ec"
+export * from "./ecs"

@@ -5,7 +5,7 @@
   "main": "dist/main",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha || true"
   },
   "repository": {
     "type": "git",
@@ -22,8 +22,15 @@
     "url": "https://github.com/Mateiadrielrafael/eix-core/issues"
   },
   "homepage": "https://github.com/Mateiadrielrafael/eix-core#readme",
-  "devDependencies": {},
-  "dependencies": {
-    "rxjs": "^6.4.0"
-  }
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.13.7",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.4"
+  },
+  "dependencies": {}
 }
