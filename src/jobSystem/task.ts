@@ -16,7 +16,7 @@ export class Task<factoryArgs, jobArgs> {
     constructor(private args: factoryArgs) { }
     
     setArgs(newArgs: factoryArgs) {
-        this.args = newAths
+        this.args = newArgs
     }
 
     /**
