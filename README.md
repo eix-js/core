@@ -77,59 +77,76 @@ system.tasks.myTask.runJobs([{ //the arguments for all jobs
 Here is an example of using the jobSystem with the ecs and mainloop.js:
 ```ts   
 import { ECS, JobSystem } from "@eix/core"
+import { Task } from "@eix/core/dist/jobSystem/task";
+import { Job } from "@eix/core/dist/jobSystem/interfaces";
 import * as mainloop from "mainloop.js"
 
 const system = new JobSystem()
 const ecs = new ECS()
 
 ecs.addEntity()
-ecs.entities[0].position = [100,200]
-ecs.entities[0].speed = [1,2]
-ecs.entities[0].acceleration = [0,3]
-
-//create a few simple ( useless ) jobs
-const speedJob = (env:ECS) => {
-    //query components
-    const components = ecs.all
-        .has("speed")
-        .get("positon","speed")
-
-    //return a job
-    return ([delta]) => {
-        components.tracked.forEach({position,speed} => {
-            //increase position
-            position[0] += speed[0] * delta
-            position[1] += speed[1] * delta
-        })
-    } 
-}
-
-const accelerationJob = (env:ECS) => {
-    //query components
-    const components = ecs.all
-        .has("acceleration")
-        .get("acceleration","speed")
-
-    //return a job
-    return ([delta]) => {
-        components.tracked.forEach({acceleration,speed} => {
-            //increase speed
-            speed[0] += acceleration[0] * delta
-            speed[1] += acceleraion[1] * delta
-        })
-    } 
-}
+ecs.entities[0].position = [100, 100]
+ecs.entities[0].speed = [1, 2]
+ecs.entities[0].acceleration = [0, 0]
 
 //create and run task
-system.addTask<[ECS],[number]>("update",ecs)
-system.tasks.update
-    .addJob("speedJob", speedJob)
-    .addJob("accelerationJob",accelerationJob)
+system.addTask<[ECS], [number]>("update", [ecs])
 
-//run task every frame
-mainloop.setUpdate((delta:number) => {
-    system.tasks.update.runJobs([delta])
-})
+const task: Task<[ECS], [number]> = system.tasks.update
+
+task
+    //this job adds the speed to the position
+    .addJob("speedJob", ([env]) => {
+        //query components
+        const components = env.all
+            .has("speed")
+            .get("position", "speed")
+
+        //return a job
+        return ([delta]) =>
+            components.tracked.forEach(({ position, speed }: any) => {
+                //increase position
+                position[0] += speed[0] * delta
+                position[1] += speed[1] * delta
+            })
+    })
+
+    //this jobs adds the acceleration to the speed
+    .addJob("accelerationJob", ([env]) => {
+        //query components
+        const components = env.all
+            .has("acceleration")
+            .get("acceleration", "speed")
+
+        // let time = 1/000
+
+        //return a job
+        return ([delta]) =>
+            components.tracked.forEach(({ acceleration, speed }: any) => {
+                //increase speed
+                speed[0] += acceleration[0] * delta
+                speed[1] += acceleration[1] * delta
+            })
+    })
+
+    //this job just logs the position
+    .addJob("logger", ([env]) => {
+        const components = env.all.get("position")
+
+        let time = 0
+
+        return ([delta]) => {
+            components.tracked.forEach(({ position }): any => {
+                //only log if once every 60 frames
+                if (++time % 60 != 0)
+                    return
+
+                console.log(position)
+            })
+        }
+    })
+
+mainloop.setUpdate((delta: number) => task.runJobs([delta / 1000])).setMaxAllowedFPS(2).start()
 ```
 
 # Playing with the source:
