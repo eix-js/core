@@ -5,7 +5,7 @@
   "main": "dist/main",
   "scripts": {
     "build": "tsc",
-    "test": "nyc mocha"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -33,5 +33,7 @@
     "ts-node": "^8.1.0",
     "typescript": "^3.4.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@eix/utils": "git+https://github.com/eix-js/utils.git"
+  }
 }
