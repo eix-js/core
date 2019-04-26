@@ -14,6 +14,10 @@ export class Task<factoryArgs, jobArgs> {
      * @param args the arguments used to create each new job
      */
     constructor(private args: factoryArgs) { }
+    
+    setArgs(newArgs: factoryArgs) {
+        this.args = newAths
+    }
 
     /**
      * used to add jobs to the task
