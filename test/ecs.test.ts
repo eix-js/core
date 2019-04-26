@@ -1,6 +1,7 @@
 import { expect } from "chai"
 import { ECS } from "../src/ecs"
 import { FlowGroup } from "../src/flowGroup";
+import { idKey } from "../src/idKey";
 
 const { floor, random } = Math
 const maxCount = 10
@@ -369,6 +370,23 @@ const main = async () => {
             const { eventState, queryCount, randomValue } = eventCountTest("changeResolved")
 
             expect(eventState).to.be.equal(randomValue * queryCount)
+        })
+        
+        it ("should expose the id of entities in trackers", () =>{
+            //create ecs
+            const ecs = new ECS()
+
+            //add entity
+            ecs.addEntity()
+
+            //add component
+            ecs.entities[ecs.lastId - 1].testComponent = 0
+
+            //query data
+            const id = ecs.all.get("testComponent").tracked[0][idKey]
+
+            //assert
+            expect(id,"id should be 0").to.be.equal(0)
         })
     })
 }

@@ -1,5 +1,6 @@
 import { ECS } from "./ecs";
 import { Filter, key, Components } from "./interfaces";
+import { idKey } from "./idKey";
 
 interface UpdateData {
     id: number
@@ -57,10 +58,10 @@ export class ComponentTracker {
                     return null
 
                 const handler: ProxyHandler<Components> = {
-                    get: (target: Components, key: string) => {
-                        if (key == "id")
-                            return id
-                        
+                    get: (target: Components, key: any) => {
+                        if (key == idKey)
+                            return parseInt(id.toString())
+
                         return target[key]
                     },
                     set: (target: Components, key: string, value: any) => {
@@ -83,10 +84,10 @@ export class ComponentTracker {
             })
 
             // filter falsy values
-            this.tracked = this.tracked.filter((value,index) => {
+            this.tracked = this.tracked.filter((value, index) => {
                 if (!value)
                     entities[index] = null
-                
+
                 return value
             })
 
