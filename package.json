@@ -4,6 +4,7 @@
   "description": "the core of the eix game engine",
   "main": "dist/main",
   "scripts": {
+    "prepare": "tsc",
     "build": "tsc",
     "test": "mocha"
   },
