@@ -58,6 +58,9 @@ export class ComponentTracker {
 
                 const handler: ProxyHandler<Components> = {
                     get: (target: Components, key: string) => {
+                        if (key == "id")
+                            return id
+                        
                         return target[key]
                     },
                     set: (target: Components, key: string, value: any) => {
