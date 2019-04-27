@@ -73,6 +73,7 @@ export class FlowGroup {
      * add a component to all selected entities
      * @param componentName name of the component to add
      * @param component the component's data
+     * @returns the flowGroup itself
      */
     addComponent(componentName: string, component: any = {}) {
         // get component ids
@@ -87,6 +88,9 @@ export class FlowGroup {
             key: componentName,
             value: component
         }))
+
+        //return this
+        return this
     }
 }
 
