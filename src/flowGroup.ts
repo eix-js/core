@@ -75,7 +75,7 @@ export class FlowGroup {
      * @param component the component's data
      */
     addComponent(componentName: string, component: any) {
-        this.pipe((ids: number[], ecs: ECS) => {
+        return this.pipe((ids: number[], ecs: ECS) => {
             ids.forEach(id => {
                 ecs.entities[id][componentName] = component
             })
