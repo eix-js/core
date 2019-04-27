@@ -101,7 +101,7 @@ const eventCountTest = (name: string) => {
     return { eventState, randomValue, queryCount }
 }
 
-//i want to have async and await
+// I want to have async and await
 const main = async () => {
 
     describe("ecs", () => {
@@ -145,7 +145,7 @@ const main = async () => {
             const ecs = new ECS()
 
             //add an entity
-            const flowGroup = ecs.addEntity(true)
+            const flowGroup = ecs.addEntityFlowGroup()
 
             //select the component before to test the change emitter
             const selected = flowGroup.get("testComponent")
@@ -302,7 +302,7 @@ const main = async () => {
             })
 
             //add entity and get the flowGroup
-            const query = ecs.addEntity(true).get("testComponent")
+            const query = ecs.addEntityFlowGroup().get("testComponent")
 
             //add a component
             ecs.entities[ecs.lastId - 1].testComponent = true
@@ -339,7 +339,7 @@ const main = async () => {
             })
 
             //add entity and get the flowGroup
-            const query = ecs.addEntity(true).get("testComponent")
+            const query = ecs.addEntityFlowGroup().get("testComponent")
 
             //add a component
             ecs.entities[ecs.lastId - 1].testComponent = true
@@ -371,8 +371,8 @@ const main = async () => {
 
             expect(eventState).to.be.equal(randomValue * queryCount)
         })
-        
-        it ("should expose the id of entities in trackers", () =>{
+
+        it("should expose the id of entities in trackers", () => {
             //create ecs
             const ecs = new ECS()
 
@@ -386,7 +386,7 @@ const main = async () => {
             const id = ecs.all.get("testComponent").tracked[0][idKey]
 
             //assert
-            expect(id,"id should be 0").to.be.equal(0)
+            expect(id, "id should be 0").to.be.equal(0)
         })
     })
 }

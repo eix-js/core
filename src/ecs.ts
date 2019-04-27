@@ -17,7 +17,7 @@ class ECS {
     /**
      * for performance reasons, i decided not to use reactiveX for this
      */
-    events:Events = {}
+    events: Events = {}
 
     /**
      * list of all eneities 
@@ -39,7 +39,7 @@ class ECS {
     /**
      * sets the value, and if the va;ue s true it emits the event
      */
-    set emitChanges(value:boolean){
+    set emitChanges(value: boolean) {
         this._emitChanges = value
 
         //emit change if true
@@ -47,30 +47,36 @@ class ECS {
             this.emit("change")
     }
 
-    constructor () { }
+    constructor() { }
 
     /**
      * add entity to system
-     * @param returnFlowGroup specifies if the function needs to return the flowGroup 
-     * (set to false by default to prevent memory leaks)
-     * @returns a flowGroup pointing to the component if returnFlowGroup is true
+     * @returns the ID of the newly added entity
      */
-    addEntity ( returnFlowGroup = false ) {
-        this.entities[ this.lastId++ ] = { }
-
+    addEntity() {
+        this.entities[this.lastId++] = {}
         //emit the events
         if (this._emitChanges)
-            this.emit("change",this.lastId - 1)
+            this.emit("change", this.lastId - 1)
+        // return the new entity's ID
+        return this.lastId - 1
+    }
 
-        //return the flowGroup
-        if (returnFlowGroup)
-            return this.all.is(this.lastId - 1)
+    /**
+     * add entity to system, but return the flow group
+     * @returns the flow group for the new entity
+     */
+    addEntityFlowGroup() {
+        // add new entity and get its id
+        const newEntityId = this.addEntity()
+        // create flow group with the entity
+        return this.all.is(newEntityId)
     }
 
     /**
      * emits event 
      */
-    emit( message: string, data:any = undefined ) {
+    emit(message: string, data: any = undefined) {
         if (!this.events[message]) return
         this.events[message].forEach(value => value(data))
     }
@@ -78,12 +84,12 @@ class ECS {
     /**
      * listen to events
      */
-    on( message : string, callback : (data:any) => void ) {
+    on(message: string, callback: (data: any) => void) {
         //create array if not already created
-        if ( !this.events[ message ] )
-            this.events[ message ] = [ callback ]
+        if (!this.events[message])
+            this.events[message] = [callback]
         else
-            this.events[ message ].push( callback )
+            this.events[message].push(callback)
     }
 }
 

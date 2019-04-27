@@ -9,6 +9,10 @@ export class FlowGroup {
 
     constructor(public ecs: ECS, public filters: Filter[]) { }
 
+    /**
+     * apply a new filter to the selection
+     * @param filter the filter to apply
+     */
     pipe(filter: Filter): FlowGroup {
         //create new flowGroup
         const child = new FlowGroup(this.ecs, [...this.filters, filter])
@@ -49,15 +53,34 @@ export class FlowGroup {
         )
     }
 
+    /**
+     * gets components from the selection
+     * @param params the parameters to get
+     * @returns the tracker for the resulting components
+     */
     get(...params: string[]): ComponentTracker {
         //create component tracker
-        const result = new ComponentTracker( this.ecs, this.has(...params).filters, params )
+        const result = new ComponentTracker(this.ecs, this.has(...params).filters, params)
 
         //emit changes
         this.ecs.emit("change")
 
         //return it
         return result
+    }
+
+    /**
+     * add a component to all selected entities
+     * @param componentName name of the component to add
+     * @param component the component's data
+     */
+    addComponent(componentName: string, component: any) {
+        this.pipe((ids: number[], ecs: ECS) => {
+            ids.forEach(id => {
+                ecs.entities[id][componentName] = component
+            })
+            return ids
+        })
     }
 }
 
