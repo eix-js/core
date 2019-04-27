@@ -1,5 +1,6 @@
 import { Events, Entities } from "./interfaces";
 import { FlowGroup } from "./flowGroup";
+import { EntityHandler } from "./componentHandler";
 
 class ECS {
     debug = false
@@ -47,19 +48,41 @@ class ECS {
             this.emit("change")
     }
 
-    constructor() { }
+    constructor() {
+        //listen to events
+        //used to fix nevs syncing problems
+        this.on("update", (data) => {
+            //nicer form
+            const { id, key, value } = data
+
+            //if entity doesnt exist, just return
+            if (!this.entities[id]) return
+
+            //set property
+            this.entities[id][key] = {
+                forced: true,
+                data: value
+            }
+        })
+    }
 
     /**
      * add entity to system
      * @returns the ID of the newly added entity
      */
     addEntity() {
-        this.entities[this.lastId++] = {}
+        //get id
+        const id = this.lastId++
+
+        //add entity
+        this.entities[id] = new Proxy({}, EntityHandler(id, this))
+
         //emit the events
         if (this._emitChanges)
-            this.emit("change", this.lastId - 1)
+            this.emit("newEntity", this.lastId - 1)
+
         // return the new entity's ID
-        return this.lastId - 1
+        return id
     }
 
     /**

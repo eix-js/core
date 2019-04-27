@@ -1,6 +1,6 @@
 import { expect } from "chai"
-import { ECS } from "../src/ecs"
-import { FlowGroup } from "../src/flowGroup";
+import { ECS } from "../src/ecs/ecs"
+import { FlowGroup } from "../src/ecs/flowGroup";
 import { idKey } from "../src/idKey";
 
 const { floor, random } = Math
@@ -21,7 +21,8 @@ const addRandomEntities = () => {
 
     //add everything to the ecs
     for (let i = 0; i < count; i++)
-        ecs.addEntity()
+        ecs.addEntityFlowGroup()
+            // .addComponent("entityFlag")
 
     //return the values
     return { ecs, count }
@@ -74,7 +75,7 @@ const eventCountTest = (name: string) => {
     const queryCount = floor(random() * maxCount) + 7
 
     //query the data a random number of times
-    let queries = [...Array(queryCount)].map(_ => ecs.all.get("testComponent"))
+    let queries = [...Array(queryCount)].map(() => ecs.all.get("testComponent"))
 
     //save the state of the events
     //it represents the changeDetected count
@@ -138,6 +139,7 @@ const main = async () => {
             const result = ecs.addEntity()
 
             expect(result).to.not.be.instanceOf(FlowGroup)
+            expect(result).to.be.equal(0)
         })
 
         it("should return the correct entity when using .is", () => {
@@ -154,12 +156,9 @@ const main = async () => {
             const randomValue = floor(random() * maxCount)
 
             //add component
-            ecs.entities[ecs.lastId - 1].testComponent = {
+            flowGroup.addComponent("testComponent", {
                 someParam: randomValue
-            }
-
-            //emit change
-            ecs.emit("change")
+            })
 
             //get the result 
             const result = selected.tracked[0].testComponent.someParam
@@ -239,12 +238,12 @@ const main = async () => {
             let eventRecived = false
 
             //add a callback to the next event loop tick
-            setImmediate(_ => {
+            setImmediate(() => {
                 expect(eventRecived).to.be.true
             })
 
             //listen to the event
-            ecs.on("testEvent", _ => {
+            ecs.on("testEvent", () => {
                 eventRecived = true
             })
 
@@ -263,12 +262,12 @@ const main = async () => {
             let eventRecived = false
 
             //add a callback to the next event loop tick
-            setImmediate(_ => {
+            setImmediate(() => {
                 expect(eventRecived).to.be.false
             })
 
             //respond to the event
-            ecs.on("change", _ => {
+            ecs.on("change", () => {
                 eventRecived = true
             })
 
@@ -297,7 +296,7 @@ const main = async () => {
             let eventRecived = false
 
             //add a callback to the next event loop tick
-            setImmediate(_ => {
+            setImmediate(() => {
                 expect(eventRecived).to.be.false
             })
 
@@ -334,7 +333,7 @@ const main = async () => {
             let eventRecived = false
 
             //add a callback to the next event loop tick
-            setImmediate(_ => {
+            setImmediate(() => {
                 expect(eventRecived).to.be.true
             })
 
@@ -369,7 +368,7 @@ const main = async () => {
         it("should emit the right number of changeResolved events", () => {
             const { eventState, queryCount, randomValue } = eventCountTest("changeResolved")
 
-            expect(eventState).to.be.equal(randomValue * queryCount)
+            expect(eventState).to.be.equal(randomValue * (queryCount + 1))
         })
 
         it("should expose the id of entities in trackers", () => {
@@ -387,6 +386,36 @@ const main = async () => {
 
             //assert
             expect(id, "id should be 0").to.be.equal(0)
+        })
+
+        it ("should add components", () => {
+            //create ecs
+            const ecs = new ECS()
+
+            //add an entty
+            const entity = ecs.addEntityFlowGroup()
+
+            //query things
+            const components = ecs.all.get("testComponent")
+
+            //first assert
+            expect(components.tracked.length,"it should query any data")
+                .to.equal(0)
+
+            //save data for comparing
+            const data = "someData"
+
+            //add component
+            entity
+                .addComponent("testComponent",data)
+
+            //second assert
+            expect(components.tracked.length,"it should now query the added component")
+                .to.be.equal(1)
+
+            //final assert
+            expect(ecs.entities[0].testComponent)
+                .to.be.equal(components.tracked[0].testComponent)
         })
     })
 }

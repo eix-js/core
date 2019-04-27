@@ -1,5 +1,5 @@
 import { ECS } from "./ecs";
-import { Filter } from "./interfaces";
+import { Filter, key } from "./interfaces";
 import { ComponentTracker } from "./componentTracker";
 
 export class FlowGroup {
@@ -60,7 +60,7 @@ export class FlowGroup {
      */
     get(...params: string[]): ComponentTracker {
         //create component tracker
-        const result = new ComponentTracker(this.ecs, this.has(...params).filters, params)
+        const result = new ComponentTracker(this.ecs, this.filters, params)
 
         //emit changes
         this.ecs.emit("change")
@@ -74,13 +74,19 @@ export class FlowGroup {
      * @param componentName name of the component to add
      * @param component the component's data
      */
-    addComponent(componentName: string, component: any) {
-        return this.pipe((ids: number[], ecs: ECS) => {
-            ids.forEach(id => {
-                ecs.entities[id][componentName] = component
-            })
-            return ids
-        })
+    addComponent(componentName: string, component: any = {}) {
+        // get component ids
+        let entities: key[] = Object.keys(this.ecs.entities)
+
+        //apply filters
+        this.filters.forEach(filter => entities = filter(entities, this.ecs))
+
+        //trigger event
+        entities.forEach(id => this.ecs.emit("update", {
+            id,
+            key: componentName,
+            value: component
+        }))
     }
 }
 
