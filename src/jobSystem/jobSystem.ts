@@ -2,8 +2,7 @@ import { Singleton } from "@eix/utils"
 import { Task } from "./task";
 
 
-@Singleton
-export class JobSystem {
+class JobSystemUndecorated {
 
     /**
      * holds all the tasks of the system
@@ -28,3 +27,8 @@ export class JobSystem {
         this.tasks[name] = new Task<factoryArgs, jobArgs>(args)
     }
 }
+
+@Singleton
+class JobSystem extends JobSystemUndecorated { }
+
+export { JobSystem, JobSystemUndecorated }
