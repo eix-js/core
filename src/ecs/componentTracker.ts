@@ -22,7 +22,11 @@ export class ComponentTracker {
 
             if (index == -1) return this.tryAddingEntity(data.id)
             else if (keys.indexOf(data.key) == -1) return
-
+            
+            // add if doesn't exist
+            if(!this.tracked[index]) {
+                this.tracked[index] = {}
+            }
             //update tracked
             this.tracked[index][data.key] = {
                 forced: true,
