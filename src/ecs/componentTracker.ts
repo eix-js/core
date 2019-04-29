@@ -1,6 +1,7 @@
 import { ECS } from "./ecs";
 import { Filter, key, Components } from "./interfaces";
 import { EntityHandler } from "./componentHandler";
+import { idKey } from "../idKey";
 
 interface UpdateData {
     id: number
@@ -12,19 +13,25 @@ export class ComponentTracker {
     tracked: Components[] = []
 
     constructor(public ecs: ECS, public filters: Filter[], public keys: string[]) {
-        
+
         //get ids
         let entities: key[] = Object.keys(ecs.entities)
 
         ecs.on("update", (data: UpdateData) => {
-            const index = entities.indexOf(data.id)
-            // console.log(entities,`Updating index ${index} with value ${data.value} of key ${data.key} and id ${data.id}. ${JSON.stringify(this.tracked[index])}`)
+            //search for entity
+            let entity = this.tracked.find(value => value[idKey] == data.id)
+            
+            //try addin it
+            if (!entity) {
+                this.tryAddingEntity(data.id)
+                entity = this.tracked.find(value => value[idKey] == data.id)
+            }
 
-            if (index == -1) return this.tryAddingEntity(data.id)
-            else if (keys.indexOf(data.key) == -1) return
+            if (!entity) return //if we couldnt add it then we can reutnr
+            else if (keys.indexOf(data.key) == -1) return //if we dont need the data, we can return 
 
             //update tracked
-            this.tracked[index][data.key] = {
+            entity[data.key] = {
                 forced: true,
                 data: data.value
             }
@@ -34,7 +41,7 @@ export class ComponentTracker {
 
         ecs.on("entityDeleted", (id: number) => {
             //remove entity
-            this.tracked = this.tracked.filter(value => value.id == id)
+            this.tracked = this.tracked.filter(value => value.id != id)
         })
 
         //filter ids
@@ -43,7 +50,9 @@ export class ComponentTracker {
         })
 
         //create tracked
-        this.tracked = entities.map((id:number) => this.registerEntity(id))
+        this.tracked = entities
+            .map((id: number) => this.registerEntity(id))
+            .filter(value => value)
 
         // filter falsy values
         this.tracked = this.tracked.filter((value, index) => {
@@ -86,8 +95,12 @@ export class ComponentTracker {
         //create proxy and stuff
         const result = this.registerEntity(id)
 
+        //return if not a result
+        if (!result)
+            return
+
         //try removing old thing first
-        this.tracked = this.tracked.filter(value => value.id == id)
+        this.tracked = this.tracked.filter(value => value.id != id)
 
         //save it
         this.tracked.push(result)

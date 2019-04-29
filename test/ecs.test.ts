@@ -417,6 +417,27 @@ const main = async () => {
             expect(ecs.entities[0].testComponent)
                 .to.be.equal(components.tracked[0].testComponent)
         })
+        it("should allow adding entities dinamically",() => {
+            //create ecs
+            const ecs= new ECS()
+
+            //add entity and component
+            ecs.addEntityFlowGroup().addComponent("test",0)
+
+            //query
+            const components = ecs.all.get("test")
+
+            //first assert
+            expect(components.tracked.length,"should select 1 component")
+                .to.be.equal(1)
+
+            //add another entity
+            ecs.addEntityFlowGroup().addComponent("test",0)
+
+            //last assert
+            expect(components.tracked.length,"should select 2 components")
+                .to.be.equal(2)
+        })
     })
 }
 
