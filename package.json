@@ -1,40 +1,53 @@
 {
-  "name": "@eix/core",
-  "version": "1.0.0",
-  "description": "the core of the eix game engine",
-  "main": "dist/main",
-  "scripts": {
-    "prepare": "tsc",
-    "build": "tsc",
-    "test": "mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/eix-js/core"
-  },
-  "keywords": [
-    "engine",
-    "core",
-    "eix"
-  ],
-  "author": "Matei Adriel",
-  "license": "SEE LICENSE IN LICENSE",
-  "bugs": {
-    "url": "https://github.com/Mateiadrielrafael/core/issues"
-  },
-  "homepage": "https://github.com/Mateiadrielrafael/core#readme",
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^11.13.7",
-    "chai": "^4.2.0",
-    "mocha": "^6.1.4",
-    "nyc": "^14.0.0",
-    "source-map-support": "^0.5.12",
-    "ts-node": "^8.1.0",
-    "typescript": "^3.4.4"
-  },
-  "dependencies": {
-    "@eix/utils": "git+https://github.com/eix-js/utils.git"
-  }
+	"name": "@eix/core",
+	"version": "1.0.0",
+	"description": "the core of the eix game engine",
+	"main": "dist/main",
+	"scripts": {
+		"lint": "eslint src/**/*.ts",
+		"lint:fix": "prettier-eslint \"**/*.ts\" --write",
+		"test": "mocha",
+		"perf": "node -r ./test/tshook.js examples/perf"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/eix-js/core"
+	},
+	"keywords": [
+		"engine",
+		"core",
+		"eix"
+	],
+	"author": "Matei Adriel",
+	"license": "SEE LICENSE IN LICENSE",
+	"bugs": {
+		"url": "https://github.com/Mateiadrielrafael/core/issues"
+	},
+	"homepage": "https://github.com/Mateiadrielrafael/core#readme",
+	"devDependencies": {
+		"@types/chai": "^4.1.7",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.0.8",
+		"@typescript-eslint/eslint-plugin": "^1.10.2",
+		"@typescript-eslint/parser": "^1.10.2",
+		"chai": "^4.2.0",
+		"eslint": "^5.16.0",
+		"eslint-config-standard": "^12.0.0",
+		"eslint-plugin-import": "^2.17.3",
+		"eslint-plugin-jsdoc": "^7.2.3",
+		"eslint-plugin-node": "^9.1.0",
+		"eslint-plugin-promise": "^4.1.1",
+		"eslint-plugin-standard": "^4.0.0",
+		"mocha": "^6.1.4",
+		"prettier-eslint": "^8.8.2",
+		"prettier-eslint-cli": "^4.7.1",
+		"source-map-support": "^0.5.12",
+		"ts-node": "^8.1.0",
+		"typescript": "^3.4.4"
+	},
+	"dependencies": {
+		"@eix/utils": "git+https://github.com/eix-js/utils.git",
+		"ee-ts": "^1.0.1",
+		"rxjs": "^6.5.2"
+	}
 }

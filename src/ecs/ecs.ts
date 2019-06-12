@@ -1,120 +1,149 @@
-import { Events, Entities } from "./interfaces";
-import { FlowGroup } from "./flowGroup";
-import { EntityHandler } from "./componentHandler";
+import { entityId, Entity } from './types'
+import { EventEmitter } from 'ee-ts'
+import { incrementalIdGenerator } from './incrementalIdGenerator'
+import { basicPipe } from './entityFlow/basePipe'
+import { EntitySource, EntityFilter } from './entitySource/types'
+import { EntityCache, entityFlowEvents } from './entityCache'
 
-class ECS {
-    debug = false
+const somedefault = incrementalIdGenerator
 
-    /**
-     * starting point for selecting components
-     */
-    all = new FlowGroup(this, [])
+class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
+	/**
+	 * @description The place where all entities are stored
+	 */
+	public entities = new Map<entityId, Entity>()
 
-    /**
-     * generate entity ids
-     */
-    lastId = 0
+	/**
+	 * @description The keys of the entities map (only updated on change).
+	 */
+	public tracked: entityId[] = []
 
-    /**
-     * for performance reasons, i decided not to use reactiveX for this
-     */
-    events: Events = {}
+	/**
+	 * @description The function used to generate ids
+	 */
+	private idGenerator: () => entityId
 
-    /**
-     * list of all eneities 
-     */
-    entities: Entities = []
+	/**
+	 * @description The place where events are cached.
+	 */
+	private cache: EntityCache = new EntityCache(this)
 
-    /**
-     * specifies if the emiting of onChnage sould be stopped
-     */
-    private _emitChanges = true
+	/**
+	 * Specifies wheather events should be async
+	 */
+	private _asyncMode: boolean
 
-    /**
-     * just serves the private property
-     */
-    get emitChanges() {
-        return this._emitChanges
-    }
+	/**
+	 * @description The main class of the eix game engine.
+	 *
+	 * @param asyncMode - Specifies wheather events should be async.
+	 * @param idGenerator - The function to generate (unique) ids.
+	 */
+	public constructor (asyncMode = true, idGenerator = somedefault()) {
+		super()
 
-    /**
-     * sets the value, and if the va;ue s true it emits the event
-     */
-    set emitChanges(value: boolean) {
-        this._emitChanges = value
+		// Eslint tries killing me if i use public / private in the constructor
+		// (even with the rule disabled)
+		this.idGenerator = idGenerator
+		this._asyncMode = asyncMode
 
-        //emit change if true
-        if (this._emitChanges)
-            this.emit("change")
-    }
+		// setup basic events
+		this.on('add', (ids: entityId[]): void => {
+			ids.forEach((id: entityId): void => {
+				this.entities.set(id, {})
+			})
 
-    constructor() {
-        //listen to events
-        //used to fix nevs syncing problems
-        this.on("update", (data) => {
-            //nicer form
-            const { id, key, value } = data
+			this.tracked.push(...ids)
+		})
+	}
 
-            //if entity doesnt exist, just return
-            if (!this.entities[id]) return
+	/**
+	 * @description Adds a new entity to the entity component system
+	 *
+	 * @returns The id of the new entity.
+	 */
+	public addEntity (): entityId {
+		const id = this.idGenerator()
 
-            //set property
-            this.entities[id][key] = {
-                forced: true,
-                data: value
-            }
-        })
-    }
+		this.eventTarget.emit('add', [id])
 
-    /**
-     * add entity to system
-     * @returns the ID of the newly added entity
-     */
-    addEntity() {
-        //get id
-        const id = this.lastId++
+		return id
+	}
 
-        //add entity
-        this.entities[id] = new Proxy({}, EntityHandler(id, this))
+	/**
+	 * @description Applies a filter to all entities.
+	 *
+	 * @param filter - The filter to apply to the entities.
+	 * @returns An entitySource - like filtering suff.
+	 */
+	public pipe (filter: EntityFilter): EntitySource {
+		return basicPipe(this, filter)
+	}
 
-        //emit the events
-        if (this._emitChanges)
-            this.emit("newEntity", this.lastId - 1)
+	/**
+	 * @description Used to resolve all events imediatly.
+	 *
+	 * @returns The Ecs object the method was called on.
+	 */
+	public resolve (): this {
+		if (this._asyncMode) this.cache.resolve()
 
-        // return the new entity's ID
-        return id
-    }
+		return this
+	}
 
-    /**
-     * add entity to system, but return the flow group
-     * @returns the flow group for the new entity
-     */
-    addEntityFlowGroup() {
-        // add new entity and get its id
-        const newEntityId = this.addEntity()
-        // create flow group with the entity
-        return this.all.is(newEntityId)
-    }
+	/**
+	 * @description Helper property to get the target for events
+	 *
+	 * @returns The target fot events.
+	 */
+	private get eventTarget (): EntityCache | this {
+		return this._asyncMode ? this.cache : this
+	}
 
-    /**
-     * emits event 
-     */
-    emit(message: string, data: any = undefined) {
-        if (!this.events[message]) return
-        this.events[message].forEach(value => value(data))
-    }
+	/**
+	 * @description Used to get the value of the private property _asyncMode.
+	 *
+	 * @returns The value of the private property _asyncMode.
+	 */
+	public get asyncMode (): boolean {
+		return this._asyncMode
+	}
 
-    /**
-     * listen to events
-     */
-    on(message: string, callback: (data: any) => void) {
-        //create array if not already created
-        if (!this.events[message])
-            this.events[message] = [callback]
-        else
-            this.events[message].push(callback)
-    }
+	/**
+	 * @description Used to get the value of the private property _asyncMode.
+	 *
+	 * @param value - The value to set asyncMode to.
+	 */
+	public set asyncMode (value: boolean) {
+		// force the resolving of events if switching from async to sync
+		if (!value && this._asyncMode) this.resolve()
+
+		this._asyncMode = value
+	}
+
+	/**
+	 * @description Helper property to get the maxActiveStackCount
+	 * from the private cache property.
+	 *
+	 * @returns The maxActiveStackCount of the cahce property.
+	 */
+	public get maxActiveStackCount (): number {
+		return this.cache.maxActiveStackCount
+	}
+
+	/**
+	 * @description Helper property to set the maxActiveStackCount
+	 * of the private cache property.
+	 *
+	 * @param value - The value to set the maxActiveStackCount of the cache property to.
+	 */
+	public set maxActiveStackCount (value: number) {
+		this.cache.maxActiveStackCount = value
+
+		if (value >= this.cache.maxActiveStackCount && this.asyncMode) {
+			this.cache.resolve()
+		}
+	}
 }
 
-
-export { ECS }
+export { Ecs }

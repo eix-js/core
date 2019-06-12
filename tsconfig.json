@@ -1,33 +1,25 @@
 {
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "types/*"
-            ]
-        },
-        "removeComments": true,
-        "sourceMap": true,
-        "lib": [
-            "es2015",
-            "es2017",
-            "dom"
-        ],
-        "noImplicitAny": true,
-        "alwaysStrict": true,
-        "moduleResolution": "Node",
-        "experimentalDecorators": true,
-        "downlevelIteration": true,
-        "target": "ESNext",
-        "outDir": "dist",
-        "declaration": true,
-        "module":"commonjs"
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist"
-    ]
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"*": ["types/*"]
+		},
+		"removeComments": true,
+		"sourceMap": true,
+		"lib": ["es2015", "es2017", "dom"],
+		"noImplicitAny": true,
+		"alwaysStrict": true,
+		"moduleResolution": "Node",
+		"experimentalDecorators": true,
+		"downlevelIteration": true,
+		"target": "ESNext",
+		"declaration": true,
+		"module": "esnext",
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strict": true,
+		"esModuleInterop": true
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "dist"]
 }
