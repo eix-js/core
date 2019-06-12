@@ -1,6 +1,13 @@
-import { EntityCacheStore, entityCacheOperations } from './types'
-import { entityId } from '../types'
-import { EntityFlowOutput } from '../entitySource/types'
+/**
+ * @module EntityCache
+ */
+
+import {
+	EntityCacheStore,
+	entityCacheOperations,
+	EntitySourceWichAllowCaching
+, entityId } from '../types'
+
 import { removeItem } from '../removeItemFromArray'
 
 export class EntityCache {
@@ -17,7 +24,7 @@ export class EntityCache {
 	/**
 	 * @description The event emitter to emit events at the end of the tick.
 	 */
-	private eventEmitter: EntityFlowOutput
+	private eventEmitter: EntitySourceWichAllowCaching
 
 	/**
 	 * @description The id of the last task created.
@@ -40,9 +47,12 @@ export class EntityCache {
 	 * @param evenEmitter - The event emitter to emit to.
 	 * @param ids - The ids to start with.
 	 */
-	public constructor (evenEmitter: EntityFlowOutput, ...ids: entityId[]) {
+	public constructor (
+		evenEmitter: EntitySourceWichAllowCaching,
+		...ids: entityId[]
+	) {
 		this.eventEmitter = evenEmitter
-		this.eventEmitter.emit('add', ids)
+		this.eventEmitter.emitWithoutCaching('add', ids)
 	}
 
 	/**
@@ -86,7 +96,7 @@ export class EntityCache {
 			instance.resolver = Promise.resolve().then((): void => {
 				if (this.activeTasks.includes(taskId)) {
 					instance.resolver = null
-					this.eventEmitter.emit(key, instance.values)
+					this.eventEmitter.emitWithoutCaching(key, instance.values)
 					instance.values = []
 					removeItem(this.activeTasks, taskId)
 				}
@@ -105,7 +115,7 @@ export class EntityCache {
 	 */
 	public resolve (): this {
 		for (let i of this.operations) {
-			this.eventEmitter.emit(i, this.cache[i].values)
+			this.eventEmitter.emitWithoutCaching(i, this.cache[i].values)
 			this.cache[i].values = []
 		}
 

@@ -1,15 +1,19 @@
-import { entityId, Entity } from './types'
+/**
+ * @module Ecs
+ */
+
+import {
+	entityId,
+	Entity,
+	entityFlowEvents,
+	entityCacheOperations,
+	EntitySource,
+	EntityFilter
+} from './types'
 import { EventEmitter } from 'ee-ts'
 import { incrementalIdGenerator } from './incrementalIdGenerator'
 import { basicPipe } from './entityFlow/basePipe'
-import { EntitySource, EntityFilter } from './entitySource/types'
-import {
-	EntityCache,
-	entityFlowEvents,
-	entityCacheOperations
-} from './entityCache'
-
-const somedefault = incrementalIdGenerator
+import { EntityCache } from './entityCache'
 
 class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	/**
@@ -43,7 +47,7 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	 * @param asyncMode - Specifies wheather events should be async.
 	 * @param idGenerator - The function to generate (unique) ids.
 	 */
-	public constructor (asyncMode = true, idGenerator = somedefault()) {
+	public constructor (asyncMode = true, idGenerator = incrementalIdGenerator()) {
 		super()
 
 		// Eslint tries killing me if i use public / private in the constructor
@@ -64,11 +68,13 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	/**
 	 * @description Adds a new entity to the entity component system
 	 *
-	 * @example ```ts
-	 *	const id = ecs.addEntity()
+	 * ### Example:
+	 *```ts
+	 * const id = ecs.addEntity()
 	 * ```
 	 *
 	 * @returns The id of the new entity.
+	 * @event add
 	 */
 	public addEntity (): entityId {
 		const id = this.idGenerator()
@@ -100,7 +106,16 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	}
 
 	/**
-	 * @description Redirects events to the right target.
+	 * @description Emits events and caches them.
+	 * If async mode is enabled. To skip the caching process, use .emitWithoutCaching.
+	 *
+	 * @example ```ts
+	 * const ecs = new Ecs()
+	 *
+	 * // thats what .addEntity does under the hood
+	 * ecs.entities.set(0,{})
+	 * ecs.emit('add',[0])
+	 * ```
 	 *
 	 * @param key - The name of the event to emit.
 	 * @param ids - The entity ids to emit.
@@ -108,6 +123,15 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	public emit (key: entityCacheOperations, ids: entityId[]): void {
 		if (this._asyncMode) this.cache.emit(key, ids)
 		else super.emit(key, ids)
+	}
+
+	public emitWithoutCaching (key: entityCacheOperations, ids: entityId[]): this {
+		const old = this._asyncMode
+		this._asyncMode = false
+		this.emit(key, ids)
+		this._asyncMode = old
+
+		return this
 	}
 
 	/**

@@ -1,8 +1,8 @@
-import {
-	EntitySource,
-	EntityFilter,
-	EntityFlowOutput
-} from '../entitySource/types'
+/**
+ * @module BasicPipe
+ */
+
+import { EntitySource, EntityFilter, EntityFlowOutput } from '../types'
 import { BaseEntityFlow } from './baseEntityFlow'
 
 /**

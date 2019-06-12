@@ -1,3 +1,7 @@
+/**
+ * @module incrementalIdGenerator
+ */
+
 import { entityId } from './types'
 
 /**
@@ -7,9 +11,9 @@ import { entityId } from './types'
  * @returns A function generating ids.
  */
 function incrementalIdGenerator (startingId = 0): () => entityId {
-    // private variable holding the last id
-    let lastId = startingId
+	// private variable holding the last id
+	let lastId = startingId
 
-    return (): entityId => lastId++ + 1
+	return (): entityId => lastId++ + 1
 }
 export { incrementalIdGenerator }

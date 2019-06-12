@@ -1,13 +1,17 @@
+/**
+ * @module BaseEntityFlow
+ */
+
 import {
+	entityId,
+	entityFlowEvents,
 	EntitySource,
 	EntityFilter,
 	EntityFlowOutput
-} from '../entitySource/types'
-import { entityId } from '../types'
+} from '../types'
 import { BehaviorSubject } from 'rxjs'
 import { basicPipe } from './basePipe'
 import { EventEmitter } from 'ee-ts'
-import { entityFlowEvents } from '../entityCache'
 
 export class BaseEntityFlow extends EventEmitter<entityFlowEvents>
 	implements EntitySource {

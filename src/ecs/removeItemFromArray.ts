@@ -1,4 +1,8 @@
 /**
+ * @module RemoveItem
+ */
+
+/**
  * @description I read a gist made by the creator of rollup
  * showcasing this fast function so i decided to copy it in here.
  *

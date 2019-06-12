@@ -29,4 +29,4 @@ Then install the dependencies:
 npm install
 ```
 
-You can use `npm test' to run all tests and `npm docs to generate docs`. 
+You can use `npm test` to run all tests and `npm run docs` to generate docs. 

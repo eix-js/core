@@ -22,9 +22,9 @@
 	"author": "Matei Adriel",
 	"license": "SEE LICENSE IN LICENSE",
 	"bugs": {
-		"url": "https://github.com/Mateiadrielrafael/core/issues"
+		"url": "https://github.com/eix-js/core/issues"
 	},
-	"homepage": "https://github.com/Mateiadrielrafael/core#readme",
+	"homepage": "https://github.com/eix-js/core/#readme",
 	"devDependencies": {
 		"@types/chai": "^4.1.7",
 		"@types/mocha": "^5.2.7",
@@ -45,6 +45,8 @@
 		"source-map-support": "^0.5.12",
 		"ts-node": "^8.1.0",
 		"typedoc": "^0.14.2",
+		"typedoc-plugin-external-module-name": "^2.1.0",
+		"typedoc-vortex-theme": "0.0.2",
 		"typescript": "^3.4.4"
 	},
 	"dependencies": {
