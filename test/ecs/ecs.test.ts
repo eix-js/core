@@ -108,4 +108,22 @@ describe('Ecs', (): void => {
 
 		expect(id).to.equal(customConstant)
 	})
+
+	it('should allow piping stuff', async (): Promise<void> => {
+		const ecs = new Ecs()
+		const entityCount = random(bulkEntityRange[0], bulkEntityRange[1])
+
+		for (let i = 0; i < 2 * entityCount; i++) ecs.addEntity()
+
+		const result = ecs.pipe({
+			name: 'somename',
+			solve (id: entityId): boolean {
+				return !!(Number(id) % 2)
+			}
+		})
+
+		await wait(0)
+
+		expect(result.tracked.length).to.equal(entityCount)
+	})
 })

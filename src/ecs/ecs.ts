@@ -14,6 +14,7 @@ import { EventEmitter } from 'ee-ts'
 import { incrementalIdGenerator } from './incrementalIdGenerator'
 import { basicPipe } from './entityFlow/basePipe'
 import { EntityCache } from './entityCache'
+import { BaseEntityFlow } from './entityFlow'
 
 class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	/**
@@ -90,7 +91,7 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	 * @param filter - The filter to apply to the entities.
 	 * @returns An entitySource - like filtering suff.
 	 */
-	public pipe (filter: EntityFilter): EntitySource {
+	public pipe (filter: EntityFilter): BaseEntityFlow {
 		return basicPipe(this, filter)
 	}
 

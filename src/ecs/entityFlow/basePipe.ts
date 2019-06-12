@@ -2,7 +2,7 @@
  * @module BasicPipe
  */
 
-import { EntitySource, EntityFilter, EntityFlowOutput } from '../types'
+import { EntityFilter, EntityFlowOutput } from '../types'
 import { BaseEntityFlow } from './baseEntityFlow'
 
 /**
@@ -15,6 +15,6 @@ import { BaseEntityFlow } from './baseEntityFlow'
 export function basicPipe (
 	input: EntityFlowOutput,
 	filter: EntityFilter
-): EntitySource {
+): BaseEntityFlow {
 	return new BaseEntityFlow(input, filter)
 }
