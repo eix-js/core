@@ -2,7 +2,7 @@ import { Ecs } from '../../src'
 import { performance } from 'perf_hooks'
 import { wait } from '../../test/utils/wait'
 
-const entityCount = 100_000
+const entityCount = 1_000
 const maxActiveStackCount = 30_000
 const deltas = [] // sync, async, async-chunks
 

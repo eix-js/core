@@ -3,7 +3,11 @@ import { EventEmitter } from 'ee-ts'
 import { incrementalIdGenerator } from './incrementalIdGenerator'
 import { basicPipe } from './entityFlow/basePipe'
 import { EntitySource, EntityFilter } from './entitySource/types'
-import { EntityCache, entityFlowEvents } from './entityCache'
+import {
+	EntityCache,
+	entityFlowEvents,
+	entityCacheOperations
+} from './entityCache'
 
 const somedefault = incrementalIdGenerator
 
@@ -60,12 +64,16 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	/**
 	 * @description Adds a new entity to the entity component system
 	 *
+	 * @example ```ts
+	 *	const id = ecs.addEntity()
+	 * ```
+	 *
 	 * @returns The id of the new entity.
 	 */
 	public addEntity (): entityId {
 		const id = this.idGenerator()
 
-		this.eventTarget.emit('add', [id])
+		this.emit('add', [id])
 
 		return id
 	}
@@ -92,12 +100,14 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	}
 
 	/**
-	 * @description Helper property to get the target for events
+	 * @description Redirects events to the right target.
 	 *
-	 * @returns The target fot events.
+	 * @param key - The name of the event to emit.
+	 * @param ids - The entity ids to emit.
 	 */
-	private get eventTarget (): EntityCache | this {
-		return this._asyncMode ? this.cache : this
+	public emit (key: entityCacheOperations, ids: entityId[]): void {
+		if (this._asyncMode) this.cache.emit(key, ids)
+		else super.emit(key, ids)
 	}
 
 	/**

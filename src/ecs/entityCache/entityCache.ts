@@ -15,7 +15,7 @@ export class EntityCache {
 	private cache: EntityCacheStore = this.generateCache()
 
 	/**
-	 * @description The ecent emitter to emit events at the end of the tick.
+	 * @description The event emitter to emit events at the end of the tick.
 	 */
 	private eventEmitter: EntityFlowOutput
 

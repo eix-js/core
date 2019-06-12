@@ -7,6 +7,7 @@
 		"lint": "eslint src/**/*.ts",
 		"lint:fix": "prettier-eslint \"**/*.ts\" --write",
 		"test": "mocha",
+		"docs": "typedoc --out docs ./src",
 		"perf": "node -r ./test/tshook.js examples/perf"
 	},
 	"repository": {
@@ -43,6 +44,7 @@
 		"prettier-eslint-cli": "^4.7.1",
 		"source-map-support": "^0.5.12",
 		"ts-node": "^8.1.0",
+		"typedoc": "^0.14.2",
 		"typescript": "^3.4.4"
 	},
 	"dependencies": {
