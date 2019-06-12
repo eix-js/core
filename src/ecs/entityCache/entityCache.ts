@@ -1,20 +1,17 @@
 /**
- * @module EntityCache
+ * @module EventGrouper
  */
 
-import {
-	EntityCacheStore,
-	entityCacheOperations,
-	EntitySourceWichAllowCaching
-, entityId } from '../types'
+import { EntityCacheStore, entityActions, entityId } from '../types'
 
 import { removeItem } from '../removeItemFromArray'
+import { EntityTree } from '../entityTree/entityTree'
 
-export class EntityCache {
+export class EventGrouper {
 	/**
 	 * @description A js list with all operations.
 	 */
-	private operations: entityCacheOperations[] = ['add', 'remove']
+	private operations: entityActions[] = ['add', 'remove']
 
 	/**
 	 * @description The object where deffered operations are stored.
@@ -24,7 +21,7 @@ export class EntityCache {
 	/**
 	 * @description The event emitter to emit events at the end of the tick.
 	 */
-	private eventEmitter: EntitySourceWichAllowCaching
+	private eventEmitter: EntityTree
 
 	/**
 	 * @description The id of the last task created.
@@ -45,14 +42,9 @@ export class EntityCache {
 	 * @description Used to only perform operations once per tick
 	 *
 	 * @param evenEmitter - The event emitter to emit to.
-	 * @param ids - The ids to start with.
 	 */
-	public constructor (
-		evenEmitter: EntitySourceWichAllowCaching,
-		...ids: entityId[]
-	) {
+	public constructor (evenEmitter: EntityTree) {
 		this.eventEmitter = evenEmitter
-		this.eventEmitter.emitWithoutCaching('add', ids)
 	}
 
 	/**
@@ -80,7 +72,7 @@ export class EntityCache {
 	 * @param ids - The ids to pass to the event.
 	 * @returns The EntityCache object the method was called on.
 	 */
-	public emit (key: entityCacheOperations, ids: entityId[]): this {
+	public emit (key: entityActions, ids: entityId[]): this {
 		const instance = this.cache[key]
 
 		// check for too many tasks
@@ -96,7 +88,7 @@ export class EntityCache {
 			instance.resolver = Promise.resolve().then((): void => {
 				if (this.activeTasks.includes(taskId)) {
 					instance.resolver = null
-					this.eventEmitter.emitWithoutCaching(key, instance.values)
+					this.eventEmitter.pushData(key, instance.values)
 					instance.values = []
 					removeItem(this.activeTasks, taskId)
 				}
@@ -115,7 +107,7 @@ export class EntityCache {
 	 */
 	public resolve (): this {
 		for (let i of this.operations) {
-			this.eventEmitter.emitWithoutCaching(i, this.cache[i].values)
+			this.eventEmitter.pushData(i, this.cache[i].values)
 			this.cache[i].values = []
 		}
 

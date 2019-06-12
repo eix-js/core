@@ -6,13 +6,12 @@ import {
 	entityId,
 	Entity,
 	entityFlowEvents,
-	entityCacheOperations,
+	entityActions,
 	EntitySource,
 	EntityFilter
 } from './types'
 import { EventEmitter } from 'ee-ts'
 import { incrementalIdGenerator } from './incrementalIdGenerator'
-import { basicPipe } from './entityFlow/basePipe'
 import { EntityCache } from './entityCache'
 import { BaseEntityFlow } from './entityFlow'
 
@@ -121,12 +120,12 @@ class Ecs extends EventEmitter<entityFlowEvents> implements EntitySource {
 	 * @param key - The name of the event to emit.
 	 * @param ids - The entity ids to emit.
 	 */
-	public emit (key: entityCacheOperations, ids: entityId[]): void {
+	public emit (key: entityActions, ids: entityId[]): void {
 		if (this._asyncMode) this.cache.emit(key, ids)
 		else super.emit(key, ids)
 	}
 
-	public emitWithoutCaching (key: entityCacheOperations, ids: entityId[]): this {
+	public emitWithoutCaching (key: entityActions, ids: entityId[]): this {
 		const old = this._asyncMode
 		this._asyncMode = false
 		this.emit(key, ids)

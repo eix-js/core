@@ -27,12 +27,12 @@ export interface EntityOperation {
 /**
  * @description Union of all operations
  */
-export type entityCacheOperations = 'add' | 'remove'
+export type entityActions = 'add' | 'remove'
 
 /**
  * @description The actual cache object. Mostly useful for the intellisense.
  */
-export type EntityCacheStore = Record<entityCacheOperations, EntityOperation>
+export type EntityCacheStore = Record<entityActions, EntityOperation>
 
 /**
  * @description The event handler type ussed by entityFlowEvents.
@@ -42,7 +42,7 @@ export type entityFlowEvent = (ids: entityId[]) => void
 /**
  * @description The base events for event emitters extended by entity flows.
  */
-export type entityFlowEvents = Record<entityCacheOperations, entityFlowEvent>
+export type entityFlowEvents = Record<entityActions, entityFlowEvent>
 
 /**
  * @description The basic structure of a filter. The name is used for optimisation purpouses.
@@ -58,7 +58,7 @@ export interface EntityFilter {
 export type EntityFlowOutput = EventEmitter<entityFlowEvents>
 
 export interface AllowsCaching {
-	emitWithoutCaching(key: entityCacheOperations, ids: entityId[]): EntitySource;
+	emitWithoutCaching(key: entityActions, ids: entityId[]): EntitySource;
 }
 
 /**

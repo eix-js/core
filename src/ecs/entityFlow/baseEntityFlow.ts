@@ -10,7 +10,6 @@ import {
 	EntityFlowOutput
 } from '../types'
 import { BehaviorSubject } from 'rxjs'
-import { basicPipe } from './basePipe'
 import { EventEmitter } from 'ee-ts'
 
 export class BaseEntityFlow extends EventEmitter<entityFlowEvents>
@@ -44,6 +43,6 @@ export class BaseEntityFlow extends EventEmitter<entityFlowEvents>
 	 * @returns An entitySource - like filtering suff.
 	 */
 	public pipe (filter: EntityFilter): EntitySource {
-		return basicPipe(this, filter)
+		return new BaseEntityFlow(this, filter)
 	}
 }
