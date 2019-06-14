@@ -19,6 +19,7 @@
 	"rules": {
 		"@typescript-eslint/no-parameter-properties": 1,
 		"@typescript-eslint/indent": 0,
+		"@typescript-eslint/no-empty-interface": 0,
 		"no-tabs": 0,
 		"jsdoc/check-examples": 1,
 		"promise/param-names": 0,

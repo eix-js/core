@@ -1,0 +1,76 @@
+{
+	"eventQueue": {
+		"addEntity": [],
+		"removeEntity": [],
+		"addComponents": [],
+		"updateComponents": []
+	},
+	"addedResolver": false,
+	"activeResolvers": [],
+	"lastId": 5,
+	"entities": {
+		"2": {
+			"id": 2,
+			"components": {
+				"someComponent": "Do you see this?",
+				"someOtherComponent": "You don't see this!"
+			}
+		}
+	},
+	"entitiesToGraphInputTable": { "2": [0, 1, 4] },
+	"QueryGraph": {
+		"0": {
+			"id": 0,
+			"caresAbout": ["someComponent"],
+			"outputsTo": [],
+			"acceptsInputs": false,
+			"snapshot": [2],
+			"filters": [
+				{
+					"name": "randomFilter",
+					"test": "[Function]",
+					"caresAbout": ["someComponent"],
+					"lastValue": true
+				}
+			]
+		},
+		"1": {
+			"id": 1,
+			"caresAbout": ["someOtherComponent"],
+			"outputsTo": [],
+			"acceptsInputs": false,
+			"snapshot": [2],
+			"filters": [
+				{
+					"name": "randomFilter2",
+					"test": "[Function]",
+					"caresAbout": ["someOtherComponent"],
+					"lastValue": true
+				}
+			]
+		},
+		"4": {
+			"id": 4,
+			"caresAbout": ["someComponent", "someOtherComponent"],
+			"outputsTo": [],
+			"acceptsInputs": false,
+			"snapshot": [],
+			"filters": [
+				{
+					"name": "has(someComponent)",
+					"test": "[Function]",
+					"caresAbout": ["someComponent"],
+					"lastValue": false
+				},
+				{
+					"name": "has(someOtherComponent)",
+					"test": "[Function]",
+					"caresAbout": ["someOtherComponent"],
+					"lastValue": false
+				}
+			]
+		}
+	},
+	"GraphInputs": [0, 1, 4],
+	"options": { "groupEvents": true }
+}
