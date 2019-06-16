@@ -1,5 +1,5 @@
 /**
- * @module Ecs
+ * @module EcsGraph
  */
 import merge from 'deepmerge'
 import {
@@ -8,11 +8,11 @@ import {
 	QueryGraphNode,
 	ecsEvent,
 	EntityFilter
-} from './types'
-import { defaultEcsOptions, defaultEntity } from './defaultEcsOptions'
-import { filterNeedsUpdate, composeInfluencedBy } from './utils'
+} from '../types'
+import { defaultEcsOptions, defaultEntity } from '../defaultEcsOptions'
+import { filterNeedsUpdate, composeInfluencedBy, compareArrays } from '../utils'
 
-export class Ecs {
+export class EcsGraph {
 	/**
 	 * @description In case the groupEvents is set to true,
 	 * events are added here and resolved asynchronously
@@ -57,7 +57,7 @@ export class Ecs {
 	/**
 	 * @description The computation graph of the ecs.
 	 */
-	private QueryGraph: Record<number, QueryGraphNode> = {}
+	public QueryGraph: Record<number, QueryGraphNode> = {}
 
 	/**
 	 * @description Holds the ids of all inputs to QueryGraph.
@@ -131,13 +131,38 @@ export class Ecs {
 		return this
 	}
 
-	private afterUpdatingComponent (
-		entityId: number,
-		...componentKeys: string[]
-	): this {
+	private updateComplexNode (entityId: number, nodeId: number): this {
+		const node = this.QueryGraph[nodeId]
+
+		if (node && node.acceptsInputs) {
+			let shouldBeAdded = true
+
+			for (let input of node.inputsFrom) {
+				const inputNode = this.QueryGraph[input]
+
+				if (!inputNode) continue
+
+				if (!inputNode.snapshot.has(entityId)) {
+					node.snapshot.delete(entityId)
+					shouldBeAdded = false
+					break
+				}
+			}
+
+			if (shouldBeAdded) {
+				node.snapshot.add(entityId)
+			}
+		}
+
+		return this
+	}
+
+	private updateInputNode (entityId: number, ...componentKeys: string[]): this {
 		let influencednputs = this.entitiesToGraphInputTable[entityId]
 
 		if (influencednputs) {
+			const complexPinsToUpdate = new Set<number>()
+
 			const influencedNodes = Array.from(influencednputs.values()).map(
 				(id: number): QueryGraphNode => this.QueryGraph[id]
 			)
@@ -149,25 +174,40 @@ export class Ecs {
 					if (filterNeedsUpdate(filter.caresAbout, ...componentKeys)) {
 						const testResult = filter.test(entityId)
 
-						if (testResult !== filter.lastValue) {
-							filter.lastValue = testResult
+						if (testResult !== filter.lastValues[entityId]) {
+							filter.lastValues[entityId] = testResult
 							somethingChanged = true
 						}
 					}
 				}
 
 				if (somethingChanged) {
+					const oldSize = node.snapshot.size
+
 					if (
 						node.filters.find(
-							({ lastValue }: EntityFilter): boolean => lastValue === false
+							({ lastValues: lastValue }: EntityFilter): boolean =>
+								lastValue[entityId] === false
 						)
 					) {
 						node.snapshot.delete(entityId)
 					} else {
 						node.snapshot.add(entityId)
 					}
+
+					if (node.snapshot.size !== oldSize) {
+						for (let outputNode of node.outputsTo) {
+							complexPinsToUpdate.add(outputNode)
+						}
+					}
 				}
 			})
+
+			if (complexPinsToUpdate.size) {
+				complexPinsToUpdate.forEach((nodeId: number): void => {
+					this.updateComplexNode(entityId, nodeId)
+				})
+			}
 		}
 
 		return this
@@ -193,7 +233,7 @@ export class Ecs {
 				}
 			})
 
-		return this.afterUpdatingComponent(entityId, ...componentKeys)
+		return this.updateInputNode(entityId, ...componentKeys)
 	}
 
 	/**
@@ -255,9 +295,22 @@ export class Ecs {
 	 * @description Used to add a node to the queryGraph
 	 *
 	 * @param filters - The filters the node must have.
-	 * @returns The ecs instance.
+	 * @returns The id of the node.
 	 */
-	public addInputNodeToQueryGraph (...filters: EntityFilter[]): this {
+	public addInputNodeToQueryGraph (...filters: EntityFilter[]): number {
+		const names = filters.map((filter: EntityFilter): string => filter.name)
+
+		for (let id of this.GraphInputs) {
+			const node = this.QueryGraph[id]
+			const nodeNames = node.filters.map(
+				(filter: EntityFilter): string => filter.name
+			)
+
+			if (compareArrays<string>(nodeNames, names)) {
+				return id
+			}
+		}
+
 		const id = this.lastId++
 
 		const caresAbout = composeInfluencedBy(...filters)
@@ -274,32 +327,40 @@ export class Ecs {
 
 		this.GraphInputs.push(id)
 
-		return this
+		return id
 	}
 
-	public addComplexNode (
-		inputNodes: number[],
-		...filters: EntityFilter[]
-	): number {
+	public addComplexNode (...inputNodes: number[]): number {
 		const id = this.lastId++
-
-		const caresAbout = composeInfluencedBy(...filters)
-
-		this.QueryGraph[id] = {
-			caresAbout,
-			id,
-			outputsTo: [],
-			inputsFrom: inputNodes,
-			acceptsInputs: true,
-			snapshot: new Set<number>(),
-			filters
-		}
+		const entityIdMap: Record<number, number> = {}
 
 		inputNodes
 			.map((id: number): QueryGraphNode => this.QueryGraph[id])
 			.forEach((node: QueryGraphNode): void => {
 				node.outputsTo.push(id)
+
+				for (let entityId of node.snapshot) {
+					if (entityIdMap[entityId]) entityIdMap[entityId]++
+					else entityIdMap[entityId] = 1
+				}
 			})
+
+		const snapshot = Object.keys(entityIdMap)
+			.filter(
+				(key: unknown): boolean =>
+					entityIdMap[key as number] === inputNodes.length
+			)
+			.map((value: unknown): number => value as number)
+
+		this.QueryGraph[id] = {
+			caresAbout: [],
+			id,
+			outputsTo: [],
+			inputsFrom: inputNodes,
+			acceptsInputs: true,
+			snapshot: new Set<number>(snapshot),
+			filters: []
+		}
 
 		return id
 	}
@@ -313,7 +374,7 @@ export class Ecs {
 						return !this.entities[id].components[componentKey]
 					},
 					caresAbout: [componentKey],
-					lastValue: false
+					lastValues: {}
 				})
 			)
 		)

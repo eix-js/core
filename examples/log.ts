@@ -24,7 +24,7 @@ export function log (value: string | Record<string, unknown> | unknown): string 
 			} else if (value[key] instanceof Array) {
 				// @ts-ignore
 				result += `[${value[key]
-					.map((val: unknown): string => log(val))
+					.map((val: unknown): string => (log(val) ? log(val) : 'nothing'))
 					.join(',')}]`
 			} else {
 				// @ts-ignore

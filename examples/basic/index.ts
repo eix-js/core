@@ -1,39 +1,19 @@
-import { Ecs } from '../../src/ecs'
+import { Ecs } from '../../src/ecs/ecs'
 import { writeFileSync } from 'fs'
 import { log } from '../log'
 
 const ecs = new Ecs({
-	groupEvents: true
+	groupEvents: false
 })
 
-const componentNames = ['someComponent', 'someOtherComponent']
+ecs.flag('a', 'b')
+ecs.flag('b', 'c')
+ecs.flag('c', 'a')
 
-const entityId = ecs
-	.addInputNodeToQueryGraph({
-		name: 'randomFilter',
-		test: (id: number): boolean => {
-			return !!ecs.entities[id].components[componentNames[0]]
-		},
-		caresAbout: [componentNames[0]],
-		lastValue: false
-	})
-	.addInputNodeToQueryGraph({
-		name: 'randomFilter2',
-		test: (id: number): boolean => {
-			return !!ecs.entities[id].components[componentNames[1]]
-		},
-		caresAbout: [componentNames[1]],
-		lastValue: false
-	})
-	.addEntity()
-
-ecs.addComponentTo(entityId, {
-	[componentNames[0]]: 'Do you see this?',
-	[componentNames[1]]: "You don't see this!"
+ecs.addEntity({
+	a: true,
+	b: false,
+	c: true
 })
-
-ecs.has(...componentNames)
-
-ecs.resolve()
 
 writeFileSync(`${__dirname}/ecs.json`, log(ecs))

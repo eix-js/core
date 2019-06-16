@@ -7,8 +7,18 @@
 		"lint": "eslint src/**/*.ts",
 		"lint:fix": "prettier-eslint \"**/*.ts\" --write",
 		"test": "mocha",
-		"docs": "typedoc --out docs ./src",
-		"perf": "node -r ./test/tshook.js examples/perf"
+		"docs": "typedoc --out docs ./src"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.ts": [
+			"npm run lint:fix",
+			"git add ."
+		]
 	},
 	"repository": {
 		"type": "git",

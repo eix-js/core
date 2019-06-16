@@ -20,7 +20,7 @@ export interface EntityFilter {
 	name: string;
 	test: (id: number) => boolean;
 	caresAbout: canCareAbout;
-	lastValue: boolean;
+	lastValues: Record<number, boolean>;
 }
 
 /**
@@ -34,6 +34,15 @@ export interface QueryGraphNode {
 	acceptsInputs: boolean;
 	snapshot: Set<number>;
 	filters: EntityFilter[];
+}
+
+/**
+ * @description The base graph node used by the computation graph of the ecs class.
+ */
+export interface QueryGraphComplexNode extends QueryGraphNode {
+	caresAbout: [];
+	acceptsInputs: true;
+	filters: [];
 }
 
 /**
