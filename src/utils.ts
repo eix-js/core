@@ -11,18 +11,18 @@ import { canCareAbout, EntityFilter } from './types'
  * @param componentKeys - The keys to search for in caresAbout.
  * @returns Whether the filter need or doesnt need to be recalculated.
  */
-export function filterNeedsUpdate (
-	caresAbout: canCareAbout,
-	...componentKeys: string[]
+export function filterNeedsUpdate(
+  caresAbout: canCareAbout,
+  ...componentKeys: string[]
 ): boolean {
-	if (caresAbout === '*') return true
-	else {
-		for (const key of componentKeys) {
-			if (caresAbout.includes(key)) return true
-		}
-	}
+  if (caresAbout === '*') return true
+  else {
+    for (const key of componentKeys) {
+      if (caresAbout.includes(key)) return true
+    }
+  }
 
-	return false
+  return false
 }
 
 /**
@@ -31,27 +31,27 @@ export function filterNeedsUpdate (
  * @param filters - The filters of the input.
  * @returns What the node is influenced by.
  */
-export function composeInfluencedBy (...filters: EntityFilter[]): canCareAbout {
-	const whatAllFiltersCareOf = filters.map(
-		({ caresAbout }: EntityFilter): canCareAbout => caresAbout
-	)
+export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
+  const whatAllFiltersCareOf = filters.map(
+    ({ caresAbout }: EntityFilter): canCareAbout => caresAbout
+  )
 
-	let caresAbout: canCareAbout = '*'
+  let caresAbout: canCareAbout = '*'
 
-	if (!whatAllFiltersCareOf.includes('*')) {
-		caresAbout = Array.from(
-			new Set(
-				whatAllFiltersCareOf.reduce(
-					(prev: canCareAbout, current: canCareAbout): canCareAbout => [
-						...prev,
-						...current
-					]
-				)
-			).values()
-		)
-	}
+  if (!whatAllFiltersCareOf.includes('*')) {
+    caresAbout = Array.from(
+      new Set(
+        whatAllFiltersCareOf.reduce(
+          (prev: canCareAbout, current: canCareAbout): canCareAbout => [
+            ...prev,
+            ...current
+          ]
+        )
+      ).values()
+    )
+  }
 
-	return caresAbout
+  return caresAbout
 }
 
 /**
@@ -63,21 +63,21 @@ export function composeInfluencedBy (...filters: EntityFilter[]): canCareAbout {
  *
  * @returns Wheather the 2 arrays match.
  */
-export function compareArrays<T> (
-	arr1: T[],
-	arr2: T[],
-	anyOrder = false
+export function compareArrays<T>(
+  arr1: T[],
+  arr2: T[],
+  anyOrder = false
 ): boolean {
-	if (anyOrder) {
-		arr1.sort()
-		arr2.sort()
-	}
+  if (anyOrder) {
+    arr1.sort()
+    arr2.sort()
+  }
 
-	for (let i = 0; i < arr1.length; i++) {
-		if (arr1[i] !== arr2[i]) {
-			return false
-		}
-	}
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false
+    }
+  }
 
-	return true
+  return true
 }

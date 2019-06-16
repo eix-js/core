@@ -10,4 +10,4 @@ const { random: rand, floor } = Math
  * @returns The random number.
  */
 export const random = (min: number, max: number): number =>
-    floor(rand() * (max - min)) + min
+  floor(rand() * (max - min)) + min

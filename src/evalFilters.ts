@@ -7,12 +7,12 @@ import { EntityFilter } from './types'
  * @param filters - The array of filters to test with.
  * @returns The result of the evaluation.
  */
-export function evalFilters (id: number, ...filters: EntityFilter[]): boolean {
-	for (let filter of filters) {
-		if (!filter.test(id)) {
-			return false
-		}
-	}
+export function evalFilters(id: number, ...filters: EntityFilter[]): boolean {
+  for (let filter of filters) {
+    if (!filter.test(id)) {
+      return false
+    }
+  }
 
-	return true
+  return true
 }
