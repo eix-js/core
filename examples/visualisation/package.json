@@ -1,0 +1,8 @@
+{
+	"name": "visualisation",
+	"version": "1.0.0",
+	"dependencies": {
+		"@eix/core": "file:../..",
+		"vis": "^4.21.0"
+	}
+}
