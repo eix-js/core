@@ -1,4 +1,4 @@
-import { EntityFilter } from './types'
+import { EntityFilter } from './types';
 
 /**
  * @description Ecaluates an array of filters on an id.
@@ -8,11 +8,11 @@ import { EntityFilter } from './types'
  * @returns The result of the evaluation.
  */
 export function evalFilters(id: number, ...filters: EntityFilter[]): boolean {
-  for (let filter of filters) {
-    if (!filter.test(id)) {
-      return false
+    for (let filter of filters) {
+        if (!filter.test(id)) {
+            return false;
+        }
     }
-  }
 
-  return true
+    return true;
 }

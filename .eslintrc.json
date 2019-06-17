@@ -1,13 +1,21 @@
 {
 	"parser": "@typescript-eslint/parser",
-	"extends": ["standard", "plugin:@typescript-eslint/recommended"],
+	"extends": [
+		"standard",
+		"plugin:@typescript-eslint/recommended",
+		"plugin:prettier/recommended"
+	],
 	"env": {
 		"browser": true,
 		"es6": true,
 		"node": true,
 		"mocha": true
 	},
-	"plugins": ["@typescript-eslint/eslint-plugin", "eslint-plugin-jsdoc"],
+	"plugins": [
+		"@typescript-eslint/eslint-plugin",
+		"eslint-plugin-jsdoc",
+		"prettier"
+	],
 	"globals": {
 		"Atomics": "readonly",
 		"SharedArrayBuffer": "readonly"
