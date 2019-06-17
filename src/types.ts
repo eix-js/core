@@ -30,6 +30,10 @@ export interface EntityFilterInitter {
   test: (ecs: EcsGraph, component: string) => (id: number) => boolean
 }
 
+export interface HasInputs {
+  inputsFrom: number[]
+}
+
 /**
  * @description The base graph node used by the computation graph of the ecs class.
  */

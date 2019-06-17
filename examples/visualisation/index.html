@@ -19,9 +19,15 @@
 
         ecs.all.flag('i')
         ecs.all.flag('i','j')
+        ecs.all.flag('i').flag('j')
         ecs.all.flag('i','k')
         ecs.all.flag('k','j')
         ecs.all.flag('i','k','j')
+        ecs.all.flag('i','j','k')
+        ecs.all.flag('j','k','i')
+        ecs.all.flag('j','i','k')
+        ecs.all.flag('k','j','i')
+        ecs.all.flag('k','i','j')
 
         const ecsNodes = []
         const ecsEdges = []

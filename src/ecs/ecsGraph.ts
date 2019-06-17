@@ -10,7 +10,12 @@ import {
   EntityFilter
 } from '../types'
 import { defaultEcsOptions, defaultEntity } from '../defaultEcsOptions'
-import { filterNeedsUpdate, composeInfluencedBy, compareArrays } from '../utils'
+import {
+  filterNeedsUpdate,
+  composeInfluencedBy,
+  compareArrays,
+  getInputs
+} from '../utils'
 
 export class EcsGraph {
   /**
@@ -331,10 +336,26 @@ export class EcsGraph {
   }
 
   public addComplexNode(...inputNodes: number[]): number {
+    const inputs = getInputs(this, {
+      inputsFrom: inputNodes
+    })
+
     for (let node of Object.values(this.QueryGraph)) {
       if (!node.acceptsInputs) continue
 
       if (compareArrays<number>(inputNodes, node.inputsFrom, true)) {
+        return node.id
+      }
+
+      if (
+        compareArrays(
+          inputs,
+          getInputs(this, {
+            inputsFrom: this.QueryGraph[node.id].inputsFrom
+          }),
+          true
+        )
+      ) {
         return node.id
       }
     }

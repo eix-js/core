@@ -2,7 +2,8 @@
  * @module Utils
  */
 
-import { canCareAbout, EntityFilter } from './types'
+import { canCareAbout, EntityFilter, HasInputs } from './types'
+import { EcsGraph } from './ecs/ecsGraph'
 
 /**
  * @description Used to only update filters if needed
@@ -80,4 +81,37 @@ export function compareArrays<T>(
   }
 
   return true
+}
+
+/**
+ * @description Removes all duplicates from array.
+ *
+ * @param arr - The array to remove duplicates from.
+ * @returns The array containing no duplicates.
+ */
+export function removeDuplicates<T>(arr: T[]): T[] {
+  return Array.from(new Set<T>(arr).values())
+}
+
+/**
+ * @description Used to recurisvly get all inputs of a node.
+ *
+ * @param ecsGraph - The source of data.
+ * @param node - The node to check inputs for.
+ * @returns An array with all ids of the inputs.
+ */
+export function getInputs(ecsGraph: EcsGraph, node: HasInputs): number[] {
+  const inputs = []
+
+  for (let nodeId of node.inputsFrom) {
+    const otherNode = ecsGraph.QueryGraph[nodeId]
+
+    if (!otherNode.acceptsInputs) {
+      inputs.push(nodeId)
+    } else {
+      inputs.push(...getInputs(ecsGraph, otherNode))
+    }
+  }
+
+  return removeDuplicates(inputs)
 }
