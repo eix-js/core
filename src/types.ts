@@ -39,7 +39,7 @@ export interface HasInputs {
  * @description The base graph node used by the computation graph of the ecs class.
  */
 export interface QueryGraphNode {
-    caresAbout: canCareAbout
+    dependencies: canCareAbout
     id: number
     outputsTo: number[]
     inputsFrom: number[]
@@ -52,7 +52,7 @@ export interface QueryGraphNode {
  * @description The base graph node used by the computation graph of the ecs class.
  */
 export interface QueryGraphComplexNode extends QueryGraphNode {
-    caresAbout: []
+    dependencies: []
     acceptsInputs: true
     filters: []
 }

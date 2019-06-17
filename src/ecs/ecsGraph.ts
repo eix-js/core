@@ -219,7 +219,7 @@ export class EcsGraph {
         this.GraphInputs.filter((id: number): boolean => !influencednputs.has(id))
             .map((id: number): QueryGraphNode => this.QueryGraph[id])
             .forEach((node: QueryGraphNode): void => {
-                if (filterNeedsUpdate(node.caresAbout, ...componentKeys)) {
+                if (filterNeedsUpdate(node.dependencies, ...componentKeys)) {
                     influencednputs.add(node.id)
                 }
             })
@@ -314,7 +314,7 @@ export class EcsGraph {
 
         this.QueryGraph[id] = {
             id,
-            caresAbout,
+            dependencies: caresAbout,
             outputsTo: [],
             inputsFrom: [],
             acceptsInputs: false,
@@ -367,7 +367,7 @@ export class EcsGraph {
             .map((value: unknown): number => value as number)
 
         this.QueryGraph[id] = {
-            caresAbout: [],
+            dependencies: [],
             id,
             outputsTo: [],
             inputsFrom: inputNodes,

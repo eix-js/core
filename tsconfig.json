@@ -19,7 +19,8 @@
 		"noUnusedParameters": true,
 		"strict": true,
 		"esModuleInterop": true,
-		"outDir": "dist"
+		"outDir": "dist",
+		"rootDir": "src"
 	},
 	"typedocOptions": {
 		"out": "./docs",
