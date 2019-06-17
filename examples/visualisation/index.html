@@ -17,10 +17,11 @@
 
         const ecs = new Ecs()
 
-        ecs.flag('i','j')
-        ecs.flag('i','k')
-        ecs.flag('k','j')
-        ecs.flag('i','k','j')
+        ecs.all.flag('i')
+        ecs.all.flag('i','j')
+        ecs.all.flag('i','k')
+        ecs.all.flag('k','j')
+        ecs.all.flag('i','k','j')
 
         const ecsNodes = []
         const ecsEdges = []
@@ -50,6 +51,9 @@
         const options = {
             physics: {
                 enabled: true
+            },
+            edges: {
+                arrows: 'to'
             }
         }
 

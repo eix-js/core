@@ -18,7 +18,13 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"strict": true,
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"allowJs": true,
+		"noEmit": true
+	},
+	"typedocOptions": {
+		"out": "./docs",
+		"theme": "./node_modules/typedoc-vortex-theme/bin/default"
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "dist"]

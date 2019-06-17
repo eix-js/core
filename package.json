@@ -7,7 +7,9 @@
 		"lint": "eslint src/**/*.ts",
 		"lint:fix": "prettier-eslint \"**/*.ts\" --write",
 		"test": "mocha",
-		"docs": "typedoc --out docs ./src"
+		"docs": "typedoc --out docs ./src",
+		"prebuild": "rimraf dist",
+		"build": "rollup -c"
 	},
 	"husky": {
 		"hooks": {
@@ -36,6 +38,11 @@
 	},
 	"homepage": "https://github.com/eix-js/core/#readme",
 	"devDependencies": {
+		"@babel/core": "^7.4.5",
+		"@babel/plugin-proposal-class-properties": "^7.4.4",
+		"@babel/plugin-proposal-object-rest-spread": "^7.4.4",
+		"@babel/preset-env": "^7.4.5",
+		"@babel/preset-typescript": "^7.3.3",
 		"@types/chai": "^4.1.7",
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.0.8",
@@ -54,16 +61,19 @@
 		"mocha": "^6.1.4",
 		"prettier-eslint": "^8.8.2",
 		"prettier-eslint-cli": "^4.7.1",
+		"rimraf": "^2.6.3",
+		"rollup": "^1.15.6",
+		"rollup-plugin-babel": "^4.3.2",
+		"rollup-plugin-node-resolve": "^5.0.3",
+		"rollup-plugin-terser": "^5.0.0",
+		"rollup-plugin-typescript": "^1.0.1",
 		"source-map-support": "^0.5.12",
 		"ts-node": "^8.1.0",
+		"tslib": "^1.10.0",
 		"typedoc": "^0.14.2",
 		"typedoc-plugin-external-module-name": "^2.1.0",
 		"typedoc-vortex-theme": "0.0.2",
 		"typescript": "^3.4.4"
 	},
-	"dependencies": {
-		"@eix/utils": "git+https://github.com/eix-js/utils.git",
-		"deepmerge": "^3.2.0",
-		"rxjs": "^6.5.2"
-	}
+	"dependencies": {}
 }

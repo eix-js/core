@@ -1,7 +1,7 @@
 /**
  * @module EcsGraph
  */
-import merge from 'deepmerge'
+
 import {
   EcsOptions,
   Entity,
@@ -65,7 +65,7 @@ export class EcsGraph {
   private GraphInputs: number[] = []
 
   public constructor(options: Partial<EcsOptions> = {}) {
-    const result = merge<EcsOptions>(defaultEcsOptions, options)
+    const result = { ...defaultEcsOptions, ...options }
 
     this.options = result
   }
@@ -331,6 +331,14 @@ export class EcsGraph {
   }
 
   public addComplexNode(...inputNodes: number[]): number {
+    for (let node of Object.values(this.QueryGraph)) {
+      if (!node.acceptsInputs) continue
+
+      if (compareArrays<number>(inputNodes, node.inputsFrom, true)) {
+        return node.id
+      }
+    }
+
     const id = this.lastId++
     const entityIdMap: Record<number, number> = {}
 

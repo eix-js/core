@@ -32,7 +32,11 @@ describe('Ecs', (): void => {
 
       const ids: number[] = []
 
-      const nodes = [ecs.flag('i'), ecs.flag('j'), ecs.flag('i', 'j')]
+      const nodes = [
+        ecs.all.flag('i'),
+        ecs.all.flag('j'),
+        ecs.all.flag('i', 'j')
+      ]
 
       for (let i of [false, true]) {
         for (let j of [false, true]) {

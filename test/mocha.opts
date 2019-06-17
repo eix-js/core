@@ -1,4 +1,4 @@
---require ./tshook.js
+--require ./test/tshook.js
 --require source-map-support/register
 --recursive
 ./test/**/*.test.ts

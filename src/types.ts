@@ -1,3 +1,5 @@
+import { EcsGraph } from './ecs/ecsGraph'
+
 /**
  * @description options to be passed to the constructor of the main ecs class
  */
@@ -21,6 +23,11 @@ export interface EntityFilter {
   test: (id: number) => boolean
   caresAbout: canCareAbout
   lastValues: Record<number, boolean>
+}
+
+export interface EntityFilterInitter {
+  name: (componentName: string) => string
+  test: (ecs: EcsGraph, component: string) => (id: number) => boolean
 }
 
 /**

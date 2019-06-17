@@ -1,8 +1,10 @@
 import { EcsGraph } from './ecsGraph'
-import { EcsOptions, QueryGraphComplexNode } from '../types'
+import { EcsOptions } from '../types'
+import { QueryNode } from './queryNode'
 
 export class Ecs {
   public ecsGraph: EcsGraph
+  public all: QueryNode
 
   /**
    * @description Nicer interface for the ecs graoh.
@@ -11,27 +13,7 @@ export class Ecs {
    */
   public constructor(options: Partial<EcsOptions>) {
     this.ecsGraph = new EcsGraph(options)
-  }
-
-  public flag(...components: string[]): QueryGraphComplexNode {
-    const ids = components.map((component: string): number =>
-      this.ecsGraph.addInputNodeToQueryGraph({
-        name: `flag(${component})`,
-        test: (id: number): boolean => {
-          const entity = this.ecsGraph.entities[id]
-
-          if (!entity) return false
-
-          return !!entity.components[component]
-        },
-        caresAbout: [component],
-        lastValues: {}
-      })
-    )
-
-    const complexNode = this.ecsGraph.addComplexNode(...ids)
-
-    return this.ecsGraph.QueryGraph[complexNode] as QueryGraphComplexNode
+    this.all = new QueryNode(this.ecsGraph)
   }
 
   public addEntity<T extends Record<string, unknown>>(components: T): number {
@@ -42,5 +24,3 @@ export class Ecs {
     return id
   }
 }
-
-console.log('testing husky2')
