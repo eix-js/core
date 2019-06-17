@@ -2,14 +2,16 @@
 	"name": "@eix/core",
 	"version": "1.0.0",
 	"description": "the core of the eix game engine",
-	"main": "dist/main",
+	"main": "dist/bundle.cjs.js",
+	"module": "dist/bundle.esm.js",
 	"scripts": {
 		"lint": "eslint src/**/*.ts",
 		"lint:fix": "prettier-eslint \"**/*.ts\" --write",
 		"test": "mocha",
 		"docs": "typedoc --out docs ./src",
 		"prebuild": "rimraf dist",
-		"build": "rollup -c"
+		"build": "rollup -c",
+		"postbuild": "tsc --emitDeclarationOnly"
 	},
 	"husky": {
 		"hooks": {

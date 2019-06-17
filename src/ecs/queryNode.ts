@@ -1,5 +1,6 @@
 import { EcsGraph } from './ecsGraph'
 import { QueryGraphNode, EntityFilterInitter } from '../types'
+import { ComponentExposer } from './componentExposer'
 
 /**
  * @module QueryNode
@@ -8,6 +9,7 @@ import { QueryGraphNode, EntityFilterInitter } from '../types'
 export class QueryNode {
   private ecsGraph: EcsGraph
   private parent: QueryGraphNode | undefined
+  private components: ComponentExposer<Record<string, unknown>> | undefined
 
   public snapshot: Set<number>
 
@@ -78,5 +80,17 @@ export class QueryNode {
     }
 
     return this
+  }
+
+  public get<T extends Record<string, unknown>>(): ComponentExposer<T> {
+    if (!this.parent) {
+      throw new Error('Cannot get component on query node with no parent')
+    }
+
+    if (this.components) {
+      return this.components as ComponentExposer<T>
+    }
+    this.components = new ComponentExposer<T>(this.ecsGraph, this.parent)
+    return this.components as ComponentExposer<T>
   }
 }

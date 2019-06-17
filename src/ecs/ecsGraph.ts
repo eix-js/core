@@ -343,10 +343,6 @@ export class EcsGraph {
     for (let node of Object.values(this.QueryGraph)) {
       if (!node.acceptsInputs) continue
 
-      if (compareArrays<number>(inputNodes, node.inputsFrom, true)) {
-        return node.id
-      }
-
       if (
         compareArrays(
           inputs,
