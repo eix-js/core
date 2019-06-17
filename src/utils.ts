@@ -2,8 +2,8 @@
  * @module Utils
  */
 
-import { canCareAbout, EntityFilter, HasInputs } from './types';
-import { EcsGraph } from './ecs/ecsGraph';
+import { canCareAbout, EntityFilter, HasInputs } from './types'
+import { EcsGraph } from './ecs/ecsGraph'
 
 /**
  * @description Used to only update filters if needed
@@ -13,14 +13,14 @@ import { EcsGraph } from './ecs/ecsGraph';
  * @returns Whether the filter need or doesnt need to be recalculated.
  */
 export function filterNeedsUpdate(caresAbout: canCareAbout, ...componentKeys: string[]): boolean {
-    if (caresAbout === '*') return true;
+    if (caresAbout === '*') return true
     else {
         for (const key of componentKeys) {
-            if (caresAbout.includes(key)) return true;
+            if (caresAbout.includes(key)) return true
         }
     }
 
-    return false;
+    return false
 }
 
 /**
@@ -30,21 +30,26 @@ export function filterNeedsUpdate(caresAbout: canCareAbout, ...componentKeys: st
  * @returns What the node is influenced by.
  */
 export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
-    const whatAllFiltersCareOf = filters.map(({ caresAbout }: EntityFilter): canCareAbout => caresAbout);
+    const whatAllFiltersCareOf = filters.map(
+        ({ caresAbout }: EntityFilter): canCareAbout => caresAbout
+    )
 
-    let caresAbout: canCareAbout = '*';
+    let caresAbout: canCareAbout = '*'
 
     if (!whatAllFiltersCareOf.includes('*')) {
         caresAbout = Array.from(
             new Set(
                 whatAllFiltersCareOf.reduce(
-                    (prev: canCareAbout, current: canCareAbout): canCareAbout => [...prev, ...current]
+                    (prev: canCareAbout, current: canCareAbout): canCareAbout => [
+                        ...prev,
+                        ...current
+                    ]
                 )
             ).values()
-        );
+        )
     }
 
-    return caresAbout;
+    return caresAbout
 }
 
 /**
@@ -58,17 +63,17 @@ export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
  */
 export function compareArrays<T>(arr1: T[], arr2: T[], anyOrder = false): boolean {
     if (anyOrder) {
-        arr1.sort();
-        arr2.sort();
+        arr1.sort()
+        arr2.sort()
     }
 
     for (let i = 0; i < arr1.length; i++) {
         if (arr1[i] !== arr2[i]) {
-            return false;
+            return false
         }
     }
 
-    return true;
+    return true
 }
 
 /**
@@ -78,7 +83,7 @@ export function compareArrays<T>(arr1: T[], arr2: T[], anyOrder = false): boolea
  * @returns The array containing no duplicates.
  */
 export function removeDuplicates<T>(arr: T[]): T[] {
-    return Array.from(new Set<T>(arr).values());
+    return Array.from(new Set<T>(arr).values())
 }
 
 /**
@@ -89,17 +94,17 @@ export function removeDuplicates<T>(arr: T[]): T[] {
  * @returns An array with all ids of the inputs.
  */
 export function getInputs(ecsGraph: EcsGraph, node: HasInputs): number[] {
-    const inputs = [];
+    const inputs = []
 
     for (let nodeId of node.inputsFrom) {
-        const otherNode = ecsGraph.QueryGraph[nodeId];
+        const otherNode = ecsGraph.QueryGraph[nodeId]
 
         if (!otherNode.acceptsInputs) {
-            inputs.push(nodeId);
+            inputs.push(nodeId)
         } else {
-            inputs.push(...getInputs(ecsGraph, otherNode));
+            inputs.push(...getInputs(ecsGraph, otherNode))
         }
     }
 
-    return removeDuplicates(inputs);
+    return removeDuplicates(inputs)
 }

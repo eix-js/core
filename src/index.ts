@@ -1,2 +1,2 @@
-export * from './ecs/ecs';
-export * from './ecs/ecsGraph';
+export * from './ecs/ecs'
+export * from './ecs/ecsGraph'

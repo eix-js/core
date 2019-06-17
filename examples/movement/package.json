@@ -19,6 +19,7 @@
 	},
 	"dependencies": {
 		"@eix/core": "file:../..",
+		"@eix/input": "git+https://github.com/eix-js/input.git",
 		"mainloop.js": "^1.0.4"
 	}
 }

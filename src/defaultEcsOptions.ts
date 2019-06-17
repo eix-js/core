@@ -1,10 +1,11 @@
-import { EcsOptions, Entity } from './types';
+import { EcsOptions, Entity } from './types'
 
 export const defaultEcsOptions: EcsOptions = {
-    groupEvents: true
-};
+    groupEvents: false,
+    changeDetection: 'manual'
+}
 
 export const defaultEntity: Entity = {
     id: 0,
     components: {}
-};
+}

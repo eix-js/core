@@ -7,9 +7,9 @@
 function wait(time: number): Promise<void> {
     return new Promise((res): void => {
         setTimeout((): void => {
-            res();
-        }, time);
-    });
+            res()
+        }, time)
+    })
 }
 
-export { wait };
+export { wait }
