@@ -2,29 +2,33 @@ import { Ecs, ComponentExposer } from '@eix/core'
 import { KeyboardInput } from '@eix/input'
 import loop from 'mainloop.js'
 
-type playerState = 'up' | 'fall' | 'down' | 'none'
+type playerState = 'up' | 'fall' | 'down' | 'none' | 'wall'
 type sidewaysState = 'air' | 'ground'
 
 interface Player extends Record<string, unknown> {
     readonly sideWaysForce: Record<sidewaysState, number>
     readonly gravityMultiplyer: Record<playerState, number>
     readonly size: [number, number]
-    readonly renderable: true
     readonly rigidbody: true
     readonly jumpForce: number
     readonly jumpOffset: number
 
+    renderable: boolean
     position: [number, number]
     color: string
     speed: [number, number]
     landed: number
+    hitTheSide: number
+    wallJumpOffest: number
     collided: [boolean, boolean]
+    collisionDirections: [number, number]
+    state: playerState
 }
 
 const directions = [
     new KeyboardInput('down', 's'),
     new KeyboardInput('right', 'd'),
-    new KeyboardInput('up', 'w'),
+    new KeyboardInput('up', 'w', 'space'),
     new KeyboardInput('left', 'a')
 ]
 
@@ -35,14 +39,15 @@ const screenSize = [window.innerWidth, window.innerHeight]
 
 const physics = {
     gravity: [0, 0.005],
-    timeSpeed: 0.75
+    timeSpeed: 0.85
 }
 
 const colors: Record<playerState, string> = {
     none: 'blue',
     fall: 'black',
     up: 'green',
-    down: 'red'
+    down: 'red',
+    wall: 'yellow'
 }
 
 canvas.width = screenSize[0]
@@ -79,6 +84,17 @@ const update = (): ((delta: number) => void) => {
         }
     })
 
+    const exit = new KeyboardInput('q')
+    exit.valueChanges.subscribe((value: boolean): void => {
+        if (value) {
+            toUpdate.each((entity: Player): string => {
+                entity.renderable = false
+
+                return 'renderable'
+            })
+        }
+    })
+
     return (delta: number) => {
         const time = delta * physics.timeSpeed
 
@@ -86,7 +102,13 @@ const update = (): ((delta: number) => void) => {
             entity.speed = entity.speed.map((value: number, index: number): number => {
                 let state: playerState = 'none'
 
-                if (directions[0].value && entity.speed[index] > 0) {
+                if (
+                    (entity.position[0] < 10 ||
+                        entity.position[0] + entity.size[0] > screenSize[0] - 10) &&
+                    entity.speed[1] > 0
+                ) {
+                    state = 'wall'
+                } else if (directions[0].value && entity.speed[index] > 0) {
                     state = 'down'
                 } else if (directions[2].value && entity.speed[index] < 0) {
                     state = 'up'
@@ -94,6 +116,7 @@ const update = (): ((delta: number) => void) => {
                     state = 'fall'
                 }
 
+                entity.state = state
                 entity.color = colors[state]
 
                 const speed =
@@ -117,7 +140,9 @@ const update = (): ((delta: number) => void) => {
                     position = screenSize[index] - entity.size[index]
                 }
 
-                if (collision !== entity.collided[index]) {
+                entity.collisionDirections[index] = collisionDirection
+
+                if (collision !== entity.collided[index] || index === 0) {
                     entity.collided[index] = collision
 
                     if (collision && index === 1) {
@@ -141,7 +166,23 @@ const update = (): ((delta: number) => void) => {
                     }
                 }
 
-                if (index === 0) {
+                if (
+                    index === 1 &&
+                    directions[2].value &&
+                    entity.state === 'wall' &&
+                    jumpCount !== 0
+                ) {
+                    let direction = -1
+
+                    if (entity.position[0] > 10) direction = 1
+
+                    entity.speed[1] = entity.jumpForce / 1.3
+                    entity.speed[0] = (direction * entity.jumpForce) / 3
+                    entity.hitTheSide = performance.now()
+                    jumpCount = 0
+                }
+
+                if (index === 0 && performance.now() - entity.hitTheSide > entity.wallJumpOffest) {
                     let sidewaysMovement = Number(directions[1].value) - Number(directions[3].value)
 
                     let sideWaysSate: sidewaysState = 'ground'
@@ -153,8 +194,13 @@ const update = (): ((delta: number) => void) => {
                     if (!(sidewaysMovement === collisionDirection)) {
                         entity.speed[index] = entity.sideWaysForce[sideWaysSate] * sidewaysMovement
                     }
-                    if (sidewaysMovement === 0) {
+
+                    if (sidewaysMovement === 0 && sideWaysSate === 'ground') {
                         entity.speed[index] = 0
+                        // const { abs } = Math
+                        // const x = entity.speed[index]
+                        // entity.speed[index] =
+                        // (x / abs(x)) * (abs(x) - entity.sideWaysForce[sideWaysSate])
                     }
                 }
 
@@ -183,14 +229,19 @@ const initialData: Player = {
         air: 0.45
     },
     collided: [false, false],
+    collisionDirections: [0, 0],
     landed: performance.now(),
     jumpOffset: 200,
     gravityMultiplyer: {
         up: 0.5,
         fall: 1.5,
         down: 3,
-        none: 1
-    }
+        none: 1,
+        wall: 0.1
+    },
+    wallJumpOffest: 500,
+    hitTheSide: performance.now(),
+    state: 'none'
 }
 
 ecs.addEntity(initialData)
