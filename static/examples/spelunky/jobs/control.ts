@@ -20,9 +20,9 @@ export const control = (ecs: Ecs): ((delta: number) => void) => {
 
             if (inputs.jump.value) {
                 if (player.state === 'ground') {
-                    player.speed[1] -= delta / 35
+                    player.speed[1] -= delta / 17.5
                 } else {
-                    player.speed[1] -= delta / 1000
+                    player.speed[1] -= delta / 500
                 }
             }
 

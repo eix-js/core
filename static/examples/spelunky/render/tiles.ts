@@ -11,7 +11,7 @@ export const drawTiles = (
     const tiles = node.get<Tile>()
     const camera = ecs.all.flag('camera').get<Camera>()
 
-    const efficientMode = true
+    const efficientMode = false
 
     const toScreenSpace = (position: vector2): vector2 => {
         const cameraData = (camera.snapshot()[0]

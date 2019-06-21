@@ -1,5 +1,6 @@
 import babel from 'rollup-plugin-babel'
 import resolve from 'rollup-plugin-node-resolve'
+import pkg from './package.json'
 import { terser } from 'rollup-plugin-terser'
 
 const dist = './dist'
@@ -16,11 +17,12 @@ export default {
 			format: 'esm'
 		},
 		{
-			name: 'EixCore',
+			name: 'EixWsServer',
 			file: `${dist}/bundle.umd.js`,
 			format: 'umd'
 		}
 	],
+	external: [...Object.keys(pkg.dependencies || {})],
 	plugins: [
 		resolve({
 			extensions: ['.ts']

@@ -1,6 +1,6 @@
 {
-	"name": "@eix-ts/core",
-	"version": "1.0.0",
+	"name": "@eix-js/core",
+	"version": "1.0.2",
 	"description": "the core of the eix game engine",
 	"main": "dist/bundle.cjs.js",
 	"module": "dist/bundle.esm.js",
@@ -16,8 +16,8 @@
 		"prebuild": "rimraf dist",
 		"build": "rollup -c",
 		"postbuild": "tsc --emitDeclarationOnly",
-		"deploy": "cd static && npm run build && cd ../../ && gh-pages -d staic/dist",
-		"publish": "npm publish --access public"
+		"deploy:gh-pages": "cd static && npm run build && cd ../../ && gh-pages -d staic/dist",
+		"deploy:npm": "npm publish --access public"
 	},
 	"husky": {
 		"hooks": {
@@ -86,5 +86,7 @@
 		"typedoc-vortex-theme": "0.0.2",
 		"typescript": "^3.4.4"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"ee-ts": "^1.0.1"
+	}
 }

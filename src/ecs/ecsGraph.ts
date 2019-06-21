@@ -2,6 +2,8 @@
  * @module EcsGraph
  */
 
+import { EventEmitter } from 'ee-ts'
+
 import {
     EcsOptions,
     Entity,
@@ -65,6 +67,10 @@ export class EcsGraph {
      * @description Holds the ids of all inputs to QueryGraph.
      */
     private GraphInputs: number[] = []
+
+    public emitter = new EventEmitter<
+        Record<ecsEvent, (entity: Entity[]) => void>
+    >()
 
     public constructor(options: Partial<EcsOptions> = {}) {
         const result = { ...defaultEcsOptions, ...options }
@@ -310,6 +316,8 @@ export class EcsGraph {
             default:
                 break
         }
+
+        this.emitter.emit(name, entities)
 
         return this
     }

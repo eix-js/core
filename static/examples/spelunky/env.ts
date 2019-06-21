@@ -1,5 +1,5 @@
 export const enviroment = {
     physics: {
-        gravity: 0.001
+        gravity: 0.002
     }
 }
