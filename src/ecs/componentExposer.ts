@@ -3,9 +3,9 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, canCareAbout, Entity } from '../types'
+import { QueryGraphNode, canCareAbout, TypedEntity } from '../types'
 
-export class ComponentExposer<T extends Record<string, unknown>> {
+export class ComponentExposer<T> {
     private ecsGraph: EcsGraph
     private node: QueryGraphNode
 
@@ -25,21 +25,32 @@ export class ComponentExposer<T extends Record<string, unknown>> {
      *
      * @returns An array with all entities.
      */
-    public snapshot(): Entity[] {
-        const entities = []
+    public snapshot(): TypedEntity<T>[] {
+        const entities: TypedEntity<T>[] = []
 
         for (const id of this.node.snapshot.values()) {
-            entities.push(this.ecsGraph.entities[id])
+            entities.push((this.ecsGraph.entities[
+                id
+            ] as unknown) as TypedEntity<T>)
         }
 
         return entities
     }
 
-    public each(callback: (entity: T) => boolean | canCareAbout | string | void) {
-        this.snapshot().forEach((entity: Entity): void => {
-            const result = callback(entity.components as T)
+    public first(): T {
+        return this.snapshot()[0].components
+    }
 
-            if (this.ecsGraph.options.changeDetection === 'manual' && result !== undefined) {
+    public each(
+        callback: (entity: T) => boolean | canCareAbout | string | void
+    ) {
+        for (const { components, id } of this.snapshot()) {
+            const result = callback(components as T)
+
+            if (
+                this.ecsGraph.options.changeDetection === 'manual' &&
+                result !== undefined
+            ) {
                 let modified: string[] = []
 
                 if (result instanceof Array && result.length) {
@@ -47,20 +58,20 @@ export class ComponentExposer<T extends Record<string, unknown>> {
                 } else if (typeof result === 'string' && result !== '*') {
                     modified = [result]
                 } else if (result === '*' || result === true) {
-                    modified = Object.keys(entity.components)
+                    modified = Object.keys(components)
                 }
 
-                const components: Record<string, unknown> = {}
+                const changedComponents: Record<string, unknown> = {}
 
-                modified.forEach((key: string): void => {
-                    components[key] = true
-                })
+                for (const key of modified) {
+                    changedComponents[key] = true
+                }
 
                 this.ecsGraph.pushEventToQueue('updateComponents', {
-                    id: entity.id,
-                    components
+                    id,
+                    components: changedComponents
                 })
             }
-        })
+        }
     }
 }

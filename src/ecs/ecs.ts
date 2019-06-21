@@ -16,11 +16,21 @@ export class Ecs {
         this.all = new QueryNode(this.ecsGraph)
     }
 
-    public addEntity<T extends Record<string, unknown>>(components: T): number {
+    public addEntity<T>(components: T): number {
         const id = this.ecsGraph.addEntity()
 
-        this.ecsGraph.addComponentTo(id, components)
+        this.ecsGraph.addComponentTo(id, components as Record<string, unknown>)
 
         return id
+    }
+
+    public removeEntity(id: number): this {
+        this.ecsGraph.remove(id)
+
+        return this
+    }
+
+    public get count(): number {
+        return Object.keys(this.ecsGraph.entities).length
     }
 }

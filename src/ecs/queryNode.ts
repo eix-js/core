@@ -9,7 +9,7 @@ import { ComponentExposer } from './componentExposer'
 export class QueryNode {
     private ecsGraph: EcsGraph
     private parent: QueryGraphNode | undefined
-    private components: ComponentExposer<Record<string, unknown>> | undefined
+    private components: ComponentExposer<unknown> | undefined
 
     public snapshot: Set<number>
 
@@ -34,9 +34,10 @@ export class QueryNode {
         return this.pipe(
             {
                 name: (component: string): string => `flag(${component})`,
-                test: (ecsGraph: EcsGraph, component: string): ((id: number) => boolean) => (
-                    id: number
-                ): boolean => {
+                test: (
+                    ecsGraph: EcsGraph,
+                    component: string
+                ): ((id: number) => boolean) => (id: number): boolean => {
                     const entity = ecsGraph.entities[id]
 
                     if (!entity) return false
@@ -48,7 +49,10 @@ export class QueryNode {
         )
     }
 
-    public pipe(filter: EntityFilterInitter, ...components: string[]): QueryNode {
+    public pipe(
+        filter: EntityFilterInitter,
+        ...components: string[]
+    ): QueryNode {
         const ids = components.map((component: string): number =>
             this.ecsGraph.addInputNodeToQueryGraph({
                 name: filter.name(component),
@@ -63,10 +67,16 @@ export class QueryNode {
         }
 
         if (ids.length === 1) {
-            return new QueryNode(this.ecsGraph, this.ecsGraph.QueryGraph[ids[0]])
+            return new QueryNode(
+                this.ecsGraph,
+                this.ecsGraph.QueryGraph[ids[0]]
+            )
         } else if (ids.length > 1) {
             const complexNode = this.ecsGraph.addComplexNode(ids[0], ids[1])
-            const queryNode = new QueryNode(this.ecsGraph, this.ecsGraph.QueryGraph[complexNode])
+            const queryNode = new QueryNode(
+                this.ecsGraph,
+                this.ecsGraph.QueryGraph[complexNode]
+            )
 
             if (ids.length === 2) {
                 return queryNode
@@ -78,7 +88,7 @@ export class QueryNode {
         return this
     }
 
-    public get<T extends Record<string, unknown>>(): ComponentExposer<T> {
+    public get<T>(): ComponentExposer<T> {
         if (!this.parent) {
             throw new Error('Cannot get component on query node with no parent')
         }
@@ -86,6 +96,7 @@ export class QueryNode {
         if (this.components) {
             return this.components as ComponentExposer<T>
         }
+
         this.components = new ComponentExposer<T>(this.ecsGraph, this.parent)
         return this.components as ComponentExposer<T>
     }

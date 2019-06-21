@@ -1,0 +1,75 @@
+// data:
+@import './../fonts.scss';
+@import './../colors.scss';
+
+// mixins:
+@import '../mixins/flex.scss';
+
+.projects {
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+
+	// min-height: 130%;
+	// max-height: 150%;
+	height: auto;
+
+	#projectInfo {
+		width: 19em;
+		font-family: $projects-overview;
+		#projectTitle {
+			font-family: $heading;
+			font-size: 3.5em;
+		}
+		#projectOverview {
+			font-size: 2em;
+		}
+	}
+
+	#projectCards {
+		@include flex();
+		justify-content: space-around;
+
+		height: auto;
+		margin-top: 10%;
+
+		.project {
+			margin-bottom: 10%;
+			width: 19em;
+			height: 8em;
+			display: block;
+			background-color: $blue;
+			border-radius: 1em;
+
+			.project-name {
+				@include flex();
+				border-radius: inherit;
+				height: 100%;
+				width: 100%;
+				font-size: 3em;
+				background-blend-mode: multiply;
+				font-family: $project-name;
+				background-position: center;
+				background-size: cover;
+				background-repeat: no-repeat;
+				background-color: $project-mask;
+
+				transition: ease-in-out background-color 0.3s;
+
+				span {
+					color: white;
+				}
+			}
+
+			.project-name:hover {
+				background-color: $void;
+			}
+		}
+	}
+
+	// #projectCards:first-child {
+	// .project:first {
+	// margin-top: 10%;
+	// }
+	// }
+}

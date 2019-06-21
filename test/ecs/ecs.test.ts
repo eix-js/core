@@ -1,61 +1,72 @@
 import { Ecs } from '../../src/ecs/ecs'
-import { random } from '../utils/random'
 import { expect } from 'chai'
-import { compareArrays } from '../../src/utils'
 
-const getMode = (value: boolean): string => (value ? 'async' : 'sync')
+describe('The ecs instance', (): void => {
+    let ecs: Ecs
 
-describe('Ecs', (): void => {
-    for (let i of [true, false]) {
-        const mode = getMode(i)
+    beforeEach((): void => {
+        ecs = new Ecs({
+            groupEvents: false
+        })
+    })
 
-        it(`should allow adding entities in ${mode} mdoe`, (): void => {
-            const randomValue = random(0, 100)
-
-            const ecs = new Ecs({
-                groupEvents: i
-            })
-
-            const id = ecs.addEntity({
-                param: randomValue
-            })
-
-            if (i) ecs.ecsGraph.resolve()
-
-            expect(ecs.ecsGraph.entities[id].components.param).to.equal(randomValue)
+    describe('The count property', (): void => {
+        it('should be 0 at the start', (): void => {
+            expect(ecs.count).to.equal(0)
         })
 
-        it(`should allow querying with a flag in ${mode} mode`, (): void => {
-            const ecs = new Ecs({
-                groupEvents: i
-            })
-
-            const ids: number[] = []
-
-            const nodes = [ecs.all.flag('i'), ecs.all.flag('j'), ecs.all.flag('i', 'j')]
-
-            for (let i of [false, true]) {
-                for (let j of [false, true]) {
-                    ids.push(
-                        ecs.addEntity({
-                            i,
-                            j
-                        })
-                    )
-                }
-            }
-
-            ecs.ecsGraph.resolve()
-
-            expect(
-                compareArrays(Array.from(nodes[0].snapshot.values()), [ids[2], ids[3]], true)
-            ).to.equal(true)
-
-            expect(
-                compareArrays(Array.from(nodes[1].snapshot.values()), [ids[1], ids[3]], true)
-            ).to.equal(true)
-
-            expect(compareArrays(Array.from(nodes[2].snapshot.values()), [ids[3]])).to.equal(true)
+        it('should be 1 after adding 1 entity', (): void => {
+            ecs.addEntity({})
+            expect(ecs.count).to.equal(1)
         })
-    }
+
+        it('should be 1 after adding then removing an entity', (): void => {
+            const id = ecs.addEntity({})
+            ecs.removeEntity(id)
+
+            expect(ecs.count).to.equal(0)
+        })
+    })
+
+    describe('The addEntity method', (): void => {
+        let id: number
+
+        beforeEach(() => {
+            id = ecs.addEntity({
+                test: true
+            })
+        })
+
+        it('should return an id', (): void => {
+            expect(id).to.be.a('number')
+        })
+
+        it('should add entities to the ecs graph', (): void => {
+            expect(ecs.ecsGraph.entities[id].id).to.equal(id)
+        })
+
+        it('should add the id of the entity to snapshots', (): void => {
+            ecs.all.flag('test')
+
+            expect(
+                Object.values(ecs.ecsGraph.QueryGraph)[0].snapshot
+            ).to.include(id)
+        })
+    })
+
+    describe('the removeEntity method', (): void => {
+        let id: number
+
+        beforeEach(() => {
+            id = ecs.addEntity({
+                test: true
+            })
+        })
+
+        it('should remove the entity from the ecs graph', () => {
+            ecs.removeEntity(id)
+
+            expect(ecs.ecsGraph[id]).to.be.undefined
+        })
+    })
 })

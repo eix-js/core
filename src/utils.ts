@@ -2,7 +2,7 @@
  * @module Utils
  */
 
-import { canCareAbout, EntityFilter, HasInputs } from './types'
+import { canCareAbout, EntityFilter, HasInputs, QueryGraphNode } from './types'
 import { EcsGraph } from './ecs/ecsGraph'
 
 /**
@@ -12,7 +12,10 @@ import { EcsGraph } from './ecs/ecsGraph'
  * @param componentKeys - The keys to search for in caresAbout.
  * @returns Whether the filter need or doesnt need to be recalculated.
  */
-export function filterNeedsUpdate(caresAbout: canCareAbout, ...componentKeys: string[]): boolean {
+export function filterNeedsUpdate(
+    caresAbout: canCareAbout,
+    ...componentKeys: string[]
+): boolean {
     if (caresAbout === '*') return true
     else {
         for (const key of componentKeys) {
@@ -40,10 +43,10 @@ export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
         caresAbout = Array.from(
             new Set(
                 whatAllFiltersCareOf.reduce(
-                    (prev: canCareAbout, current: canCareAbout): canCareAbout => [
-                        ...prev,
-                        ...current
-                    ]
+                    (
+                        prev: canCareAbout,
+                        current: canCareAbout
+                    ): canCareAbout => [...prev, ...current]
                 )
             ).values()
         )
@@ -61,7 +64,11 @@ export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
  *
  * @returns Wheather the 2 arrays match.
  */
-export function compareArrays<T>(arr1: T[], arr2: T[], anyOrder = false): boolean {
+export function compareArrays<T>(
+    arr1: T[],
+    arr2: T[],
+    anyOrder = false
+): boolean {
     if (anyOrder) {
         arr1.sort()
         arr2.sort()
@@ -107,4 +114,18 @@ export function getInputs(ecsGraph: EcsGraph, node: HasInputs): number[] {
     }
 
     return removeDuplicates(inputs)
+}
+
+export function getNodeChildren(ecsGraph: EcsGraph, ids: number[]): number[] {
+    if (!ids.length) return []
+
+    const result: number[] = [...ids]
+
+    ids.map((id: number): QueryGraphNode => ecsGraph.QueryGraph[id]).forEach(
+        (node: QueryGraphNode): void => {
+            result.push(...getNodeChildren(ecsGraph, node.outputsTo))
+        }
+    )
+
+    return removeDuplicates(result)
 }

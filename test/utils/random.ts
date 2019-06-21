@@ -9,4 +9,5 @@ const { random: rand, floor } = Math
  * @param max - The max val for the int.
  * @returns The random number.
  */
-export const random = (min: number, max: number): number => floor(rand() * (max - min)) + min
+export const random = (min: number, max: number): number =>
+    floor(rand() * (max - min)) + min

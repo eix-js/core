@@ -3,3 +3,4 @@ dist
 node_modules
 docs
 report.*.json
+*.zip

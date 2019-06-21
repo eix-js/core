@@ -1,0 +1,17 @@
+// mixins:
+@import './scss/mixins/flex.scss';
+@import './scss/mixins/maximum.scss';
+
+.card {
+	@include flex();
+	@include maximum-size();
+}
+
+// side effecs:
+@import './scss/scrollbar.scss';
+@import './scss/biolerplate.scss';
+
+// cards:
+@import './scss/cards/projects.scss';
+@import './scss/cards/landing.scss';
+@import './scss/cards/contributors.scss';

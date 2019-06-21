@@ -1,0 +1,17 @@
+@import '../mixins/background.scss';
+@import '../mixins/maximum.scss';
+@import '../colors.scss';
+
+.contributors {
+	background-color: $blue;
+
+	canvas {
+		@include maximum-size();
+	}
+}
+
+@media screen and (max-width: 500px) {
+	.contributors {
+		display: none !important;
+	}
+}

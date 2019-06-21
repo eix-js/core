@@ -17,7 +17,6 @@
 		"module": "esnext",
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"strict": true,
 		"esModuleInterop": true,
 		"outDir": "dist",
 		"rootDir": "src"

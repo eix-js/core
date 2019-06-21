@@ -1,0 +1,18 @@
+@import './colors.scss';
+
+$scrollbar-width: 12px;
+
+::-webkit-scrollbar-track {
+	box-shadow: inset 0 0 $scrollbar-width / 2 $scrollbar-shadow-color;
+	background-color: $scrollbar-background;
+}
+
+::-webkit-scrollbar {
+	width: $scrollbar-width;
+	background-color: $scrollbar-background;
+}
+
+::-webkit-scrollbar-thumb {
+	box-shadow: inset 0 0 $scrollbar-width / 2 $scrollbar-shadow-color;
+	background-color: $scrollbar-color;
+}

@@ -2,21 +2,29 @@
  * @module EcsGraph
  */
 
-import { EcsOptions, Entity, QueryGraphNode, ecsEvent, EntityFilter } from '../types'
+import {
+    EcsOptions,
+    Entity,
+    QueryGraphNode,
+    ecsEvent,
+    EntityFilter,
+    Event
+} from '../types'
 import { defaultEcsOptions, defaultEntity } from '../defaultEcsOptions'
-import { filterNeedsUpdate, composeInfluencedBy, compareArrays, getInputs } from '../utils'
+import {
+    filterNeedsUpdate,
+    composeInfluencedBy,
+    compareArrays,
+    getInputs,
+    getNodeChildren
+} from '../utils'
 
 export class EcsGraph {
     /**
      * @description In case the groupEvents is set to true,
      * events are added here and resolved asynchronously
      */
-    private eventQueue: Record<ecsEvent, Entity[]> = {
-        addEntity: [],
-        removeEntity: [],
-        addComponents: [],
-        updateComponents: []
-    }
+    private eventQueue: Event[] = []
 
     /**
      * @description Specifies if theres already a handler for the events in the queue.
@@ -88,14 +96,11 @@ export class EcsGraph {
         this.activeResolvers = []
         this.addedResolver = false
 
-        for (let i in this.eventQueue) {
-            // for ts to shut up
-            const key = i as ecsEvent
-
-            this.handleEvent(key, ...this.eventQueue[key])
-
-            this.eventQueue[key] = []
+        for (let ev of this.eventQueue) {
+            this.handleEvent(ev.name, ...ev.data)
         }
+
+        this.eventQueue = []
 
         return this
     }
@@ -108,7 +113,10 @@ export class EcsGraph {
      * @returns The ecs instance.
      */
     public pushEventToQueue(name: ecsEvent, ...entities: Entity[]): this {
-        this.eventQueue[name].push(...entities)
+        this.eventQueue.push({
+            name,
+            data: [...entities]
+        })
 
         if (this.options.groupEvents) {
             if (!this.addedResolver) {
@@ -151,7 +159,10 @@ export class EcsGraph {
         return this
     }
 
-    private updateInputNode(entityId: number, ...componentKeys: string[]): this {
+    private updateInputNode(
+        entityId: number,
+        ...componentKeys: string[]
+    ): this {
         let influencednputs = this.entitiesToGraphInputTable[entityId]
 
         if (influencednputs) {
@@ -165,7 +176,9 @@ export class EcsGraph {
                 let somethingChanged = false
 
                 for (let filter of node.filters) {
-                    if (filterNeedsUpdate(filter.caresAbout, ...componentKeys)) {
+                    if (
+                        filterNeedsUpdate(filter.caresAbout, ...componentKeys)
+                    ) {
                         const testResult = filter.test(entityId)
 
                         if (testResult !== filter.lastValues[entityId]) {
@@ -180,7 +193,9 @@ export class EcsGraph {
 
                     if (
                         node.filters.find(
-                            ({ lastValues: lastValue }: EntityFilter): boolean =>
+                            ({
+                                lastValues: lastValue
+                            }: EntityFilter): boolean =>
                                 lastValue[entityId] === false
                         )
                     ) {
@@ -207,7 +222,10 @@ export class EcsGraph {
         return this
     }
 
-    private afterAddingComponent(entityId: number, ...componentKeys: string[]): this {
+    private afterAddingComponent(
+        entityId: number,
+        ...componentKeys: string[]
+    ): this {
         let influencednputs = this.entitiesToGraphInputTable[entityId]
 
         if (!influencednputs) {
@@ -216,7 +234,9 @@ export class EcsGraph {
             influencednputs = newSet
         }
 
-        this.GraphInputs.filter((id: number): boolean => !influencednputs.has(id))
+        this.GraphInputs.filter(
+            (id: number): boolean => !influencednputs.has(id)
+        )
             .map((id: number): QueryGraphNode => this.QueryGraph[id])
             .forEach((node: QueryGraphNode): void => {
                 if (filterNeedsUpdate(node.dependencies, ...componentKeys)) {
@@ -267,6 +287,26 @@ export class EcsGraph {
                     }
                 })
                 break
+            case 'removeEntity':
+                for (const { id } of entities) {
+                    delete this.entities[id]
+
+                    const influences = this.entitiesToGraphInputTable[id]
+                    let ids = influences ? Array.from(influences.values()) : []
+
+                    // this is recurisve so i made a different function
+                    const children = getNodeChildren(this, ids).map(
+                        (id: number): QueryGraphNode => this.QueryGraph[id]
+                    )
+
+                    for (const child of children) {
+                        child.snapshot.delete(id)
+
+                        for (const { lastValues } of child.filters) {
+                            delete lastValues[id]
+                        }
+                    }
+                }
             default:
                 break
         }
@@ -281,7 +321,10 @@ export class EcsGraph {
      * @param components - The components to add to the ecs.
      * @returns The ecs instance.
      */
-    public addComponentTo(id: number, components: Record<string, unknown>): this {
+    public addComponentTo(
+        id: number,
+        components: Record<string, unknown>
+    ): this {
         this.pushEventToQueue('addComponents', {
             id: id,
             components
@@ -301,7 +344,9 @@ export class EcsGraph {
 
         for (let id of this.GraphInputs) {
             const node = this.QueryGraph[id]
-            const nodeNames = node.filters.map((filter: EntityFilter): string => filter.name)
+            const nodeNames = node.filters.map(
+                (filter: EntityFilter): string => filter.name
+            )
 
             if (compareArrays<string>(nodeNames, names)) {
                 return id
@@ -311,6 +356,31 @@ export class EcsGraph {
         const id = this.lastId++
 
         const caresAbout = composeInfluencedBy(...filters)
+        const snapshot = new Set<number>()
+
+        for (let entity of Object.values(this.entities)) {
+            if (
+                filterNeedsUpdate(caresAbout, ...Object.keys(entity.components))
+            ) {
+                let good = true
+
+                this.entitiesToGraphInputTable[entity.id].add(id)
+
+                for (let filter of filters) {
+                    const result = filter.test(entity.id)
+                    filter.lastValues[entity.id] = result
+
+                    if (!result) {
+                        good = false
+                        continue
+                    }
+                }
+
+                if (good) {
+                    snapshot.add(entity.id)
+                }
+            }
+        }
 
         this.QueryGraph[id] = {
             id,
@@ -318,7 +388,7 @@ export class EcsGraph {
             outputsTo: [],
             inputsFrom: [],
             acceptsInputs: false,
-            snapshot: new Set<number>(),
+            snapshot,
             filters
         }
 
@@ -363,7 +433,10 @@ export class EcsGraph {
             })
 
         const snapshot = Object.keys(entityIdMap)
-            .filter((key: unknown): boolean => entityIdMap[key as number] === inputNodes.length)
+            .filter(
+                (key: unknown): boolean =>
+                    entityIdMap[key as number] === inputNodes.length
+            )
             .map((value: unknown): number => value as number)
 
         this.QueryGraph[id] = {
@@ -379,19 +452,11 @@ export class EcsGraph {
         return id
     }
 
-    public has(...componentKeys: string[]): this {
-        this.addInputNodeToQueryGraph(
-            ...componentKeys.map(
-                (componentKey: string): EntityFilter => ({
-                    name: `has(${componentKey})`,
-                    test: (id: number): boolean => {
-                        return !this.entities[id].components[componentKey]
-                    },
-                    caresAbout: [componentKey],
-                    lastValues: {}
-                })
-            )
-        )
+    public remove(id: number): this {
+        this.pushEventToQueue('removeEntity', {
+            id,
+            components: {}
+        })
 
         return this
     }

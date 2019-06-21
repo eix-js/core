@@ -60,9 +60,23 @@ export interface QueryGraphComplexNode extends QueryGraphNode {
 /**
  * @description Type holding all possible events for the ecs
  */
-export type ecsEvent = 'removeEntity' | 'addEntity' | 'updateComponents' | 'addComponents'
+export type ecsEvent =
+    | 'removeEntity'
+    | 'addEntity'
+    | 'updateComponents'
+    | 'addComponents'
 
 /**
  * @description What components a filter / node needs to re-calculate on the change of.
  */
 export type canCareAbout = string[] | '*'
+
+export interface TypedEntity<T> {
+    id: number
+    components: T
+}
+
+export interface Event {
+    name: ecsEvent
+    data: Entity[]
+}
