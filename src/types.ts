@@ -6,6 +6,7 @@ import { EcsGraph } from './ecs/ecsGraph'
 export interface EcsOptions {
     groupEvents: boolean
     changeDetection: 'automatic' | 'manual'
+    setComponentOnUpdate: boolean
 }
 
 /**

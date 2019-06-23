@@ -2,7 +2,8 @@ import { EcsOptions, Entity } from './types'
 
 export const defaultEcsOptions: EcsOptions = {
     groupEvents: false,
-    changeDetection: 'manual'
+    changeDetection: 'manual',
+    setComponentOnUpdate: true
 }
 
 export const defaultEntity: Entity = {

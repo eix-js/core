@@ -288,6 +288,18 @@ export class EcsGraph {
             case 'updateComponents':
                 entities.forEach((entity: Entity): void => {
                     const componentKeys = Object.keys(entity.components)
+
+                    if (this.options.setComponentOnUpdate) {
+                        const entityRef = this.entities[entity.id]
+
+                        if (entityRef) {
+                            for (const key of componentKeys) {
+                                entityRef.components[key] =
+                                    entity.components[key]
+                            }
+                        }
+                    }
+
                     if (componentKeys.length) {
                         this.updateInputNode(entity.id, ...componentKeys)
                     }
