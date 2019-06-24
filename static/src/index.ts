@@ -1,13 +1,15 @@
 import './styles.scss'
-import { displayProjects } from './ts/projectDisplayer'
-// import '../examples/movement'
+import { projectsComponent } from './ts/projectComponent'
+import { contributorsComponent } from './ts/contributorsComponent'
 import { main } from '../examples/spelunky'
+import { enviroment } from '../examples/spelunky/env'
 
-displayProjects()
-// showExample()
+customElements.define('eix-projects', projectsComponent)
+customElements.define('eix-contributors', contributorsComponent)
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 
-canvas.height = window.innerHeight
-canvas.width = window.innerWidth
+canvas.height = enviroment.screenSize[1]
+canvas.width = enviroment.screenSize[0]
 
 main(canvas)

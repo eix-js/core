@@ -1,17 +1,39 @@
 @import '../mixins/background.scss';
-@import '../mixins/maximum.scss';
-@import '../colors.scss';
+@import '../mixins/flex.scss';
 
 .contributors {
-	background-color: $blue;
+    @include background();
+    background-image: url('./assets/wall.png');
 
-	canvas {
-		@include maximum-size();
-	}
-}
+    background-color: green;
+    background-blend-mode: luminosity;
 
-@media screen and (max-width: 500px) {
-	.contributors {
-		display: none !important;
-	}
+    flex-direction: column;
+    justify-content: center;
+
+    #description {
+        text-align: center;
+        color: white;
+        text-shadow: 2px 2px black;
+        font-size: 2em;
+        font-family: $heading;
+        margin: 10px;
+    }
+
+    #list {
+        width: 10em;
+        @include flex();
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        .avatar > img {
+            background-color: yellow;
+            height: 3em;
+            border-radius: 50%;
+        }
+    }
+
+    .contributor {
+        color: white;
+    }
 }

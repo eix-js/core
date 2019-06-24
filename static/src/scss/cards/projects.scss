@@ -10,8 +10,6 @@
 	flex-wrap: wrap;
 	justify-content: space-evenly;
 
-	// min-height: 130%;
-	// max-height: 150%;
 	height: auto;
 
 	#projectInfo {
@@ -19,14 +17,14 @@
 		font-family: $projects-overview;
 		#projectTitle {
 			font-family: $heading;
-			font-size: 3.5em;
+			font-size: 3em;
 		}
 		#projectOverview {
-			font-size: 2em;
+			font-size: 1.5em;
 		}
 	}
 
-	#projectCards {
+	.projectCards {
 		@include flex();
 		justify-content: space-around;
 

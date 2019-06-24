@@ -18,7 +18,7 @@
 		"postbuild": "tsc --emitDeclarationOnly",
 		"deploy:gh-pages": "cd static && npm run build && cd ../ && gh-pages -d static/dist",
 		"deploy:npm": "npm publish --access public",
-		"deploy": "npm ru nbuild && npm run deploy:gh-pages && npm run deploy:npm"
+		"deploy": "npm run build && npm run deploy:gh-pages && npm run deploy:npm"
 	},
 	"husky": {
 		"hooks": {

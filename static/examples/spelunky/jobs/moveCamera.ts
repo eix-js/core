@@ -1,7 +1,6 @@
 import { Ecs } from '@eix/core'
 import { Camera, Player, vector2 } from '../types'
-
-const screenSize = [window.innerWidth, window.innerHeight]
+import { enviroment } from '../env'
 
 export const moveCamera = (ecs: Ecs): ((delta: number) => void) => {
     const cameras = ecs.all.flag('camera').get<Camera>()
@@ -13,7 +12,8 @@ export const moveCamera = (ecs: Ecs): ((delta: number) => void) => {
 
             const newCameraPosition = player.position.map(
                 (value: number, index: number): number =>
-                    value + (player.scale[index] - screenSize[index]) / 2
+                    value +
+                    (player.scale[index] - enviroment.screenSize[index]) / 2
             )
 
             camera.position = camera.position.map(
