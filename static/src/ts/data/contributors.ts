@@ -9,7 +9,8 @@ export const contributors: Record<string, Contributor> = {
     Neverix: {
         name: 'Neverix',
         github: 'https://github.com/neverix',
-        avatar: 'https://avatars0.githubusercontent.com/u/46641404?s=460&v=4'
+        avatar:
+            'https://cdn.discordapp.com/attachments/550651498045112321/592755801035243555/nev.png'
     },
     Jonas: {
         name: 'Jonas',

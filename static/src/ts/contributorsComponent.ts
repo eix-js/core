@@ -16,6 +16,7 @@ export const contributorsComponent = component(
                             <div class="contributor">
                                 <div class="avatar">
                                     <img
+                                        id=${contributor.name}
                                         alt=${contributor.name}
                                         src=${contributor.avatar}
                                         height="30px"
