@@ -1,6 +1,6 @@
 {
 	"name": "@eix-js/core",
-	"version": "1.0.5",
+	"version": "0.0.6",
 	"description": "the core of the eix game engine",
 	"main": "dist/bundle.cjs.js",
 	"module": "dist/bundle.esm.js",
@@ -18,7 +18,7 @@
 		"postbuild": "tsc --emitDeclarationOnly",
 		"deploy:gh-pages": "cd static && npm run build && cd ../ && gh-pages -d static/dist",
 		"deploy:npm": "npm publish --access public",
-		"deploy":"npm ru nbuild && npm run deploy:gh-pages && npm run deploy:npm"
+		"deploy": "npm ru nbuild && npm run deploy:gh-pages && npm run deploy:npm"
 	},
 	"husky": {
 		"hooks": {
