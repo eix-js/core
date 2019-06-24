@@ -273,7 +273,7 @@ export class EcsGraph {
                 })
                 break
             case 'addComponents':
-                entities.forEach((entity: Entity): void => {
+                for (const entity of entities) {
                     this.entities[entity.id].components = {
                         ...this.entities[entity.id].components,
                         ...entity.components
@@ -283,17 +283,29 @@ export class EcsGraph {
                     if (componentKeys.length) {
                         this.afterAddingComponent(entity.id, ...componentKeys)
                     }
-                })
+                }
                 break
             case 'updateComponents':
                 entities.forEach((entity: Entity): void => {
                     const componentKeys = Object.keys(entity.components)
 
-                    if (this.options.setComponentOnUpdate) {
-                        const entityRef = this.entities[entity.id]
+                    const entityRef = this.entities[entity.id]
 
-                        if (entityRef) {
-                            for (const key of componentKeys) {
+                    if (entityRef) {
+                        for (const key of componentKeys) {
+                            if (
+                                this.options.addComponentsIfTheyDontExist &&
+                                entityRef.components[key] === undefined
+                            ) {
+                                this.handleEvent('addComponents', {
+                                    id: entity.id,
+                                    components: {
+                                        [key]: entity.components[key]
+                                    }
+                                })
+                            }
+
+                            if (this.options.setComponentOnUpdate) {
                                 entityRef.components[key] =
                                     entity.components[key]
                             }

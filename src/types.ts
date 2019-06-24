@@ -7,6 +7,7 @@ export interface EcsOptions {
     groupEvents: boolean
     changeDetection: 'automatic' | 'manual'
     setComponentOnUpdate: boolean
+    addComponentsIfTheyDontExist: boolean
 }
 
 /**
@@ -81,3 +82,8 @@ export interface Event {
     name: ecsEvent
     data: Entity[]
 }
+
+/**
+ * @description Operators wich can be based to .where
+ */
+export type operator = '==' | '!='

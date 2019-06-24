@@ -11,7 +11,7 @@ export class Ecs {
      *
      * @param options - The options to pass to the EcsGraph construcotor.
      */
-    public constructor(options: Partial<EcsOptions>) {
+    public constructor(options: Partial<EcsOptions> = {}) {
         this.ecsGraph = new EcsGraph(options)
         this.all = new QueryNode(this.ecsGraph)
     }

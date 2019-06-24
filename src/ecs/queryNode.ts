@@ -1,5 +1,5 @@
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, EntityFilterInitter } from '../types'
+import { QueryGraphNode, EntityFilterInitter, operator } from '../types'
 import { ComponentExposer } from './componentExposer'
 
 /**
@@ -28,6 +28,36 @@ export class QueryNode {
         } else {
             this.snapshot = new Set<number>()
         }
+    }
+
+    public where<S>(
+        component: string,
+        operator: operator,
+        value: S
+    ): QueryNode {
+        return this.pipe(
+            {
+                name: (componentName: string) =>
+                    `where ${componentName} ${operator} ${value}`,
+                test: (
+                    ecs: EcsGraph,
+                    componentName: string
+                ): ((id: number) => boolean) => (id: number): boolean => {
+                    if (operator === '==') {
+                        return (
+                            ecs.entities[id].components[componentName] === value
+                        )
+                    } else if (operator === '!=') {
+                        return (
+                            ecs.entities[id].components[componentName] !== value
+                        )
+                    } else {
+                        return true
+                    }
+                }
+            },
+            component
+        )
     }
 
     public flag(...components: string[]): QueryNode {

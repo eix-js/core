@@ -1,13 +1,13 @@
 import { Ecs } from '../../src/ecs/ecs'
 import { expect } from 'chai'
+import { random } from '../utils/random'
+import { Entity } from '../../src/types'
 
 describe('The ecs instance', (): void => {
     let ecs: Ecs
 
     beforeEach((): void => {
-        ecs = new Ecs({
-            groupEvents: false
-        })
+        ecs = new Ecs()
     })
 
     describe('The count property', (): void => {
@@ -54,7 +54,7 @@ describe('The ecs instance', (): void => {
         })
     })
 
-    describe('the removeEntity method', (): void => {
+    describe('The removeEntity method', (): void => {
         let id: number
 
         beforeEach(() => {
@@ -66,7 +66,53 @@ describe('The ecs instance', (): void => {
         it('should remove the entity from the ecs graph', () => {
             ecs.removeEntity(id)
 
-            expect(ecs.ecsGraph[id]).to.be.undefined
+            expect(ecs.ecsGraph.entities[id]).to.be.undefined
+        })
+    })
+
+    describe('The setComponentOnUpdate option', (): void => {
+        let id: number
+        let value: number
+
+        beforeEach(() => {
+            value = random(10, 100)
+
+            id = ecs.addEntity({
+                prop: value
+            })
+        })
+
+        it('should set the components when reciving the events', () => {
+            const newValue = random(10, 100)
+
+            ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                id,
+                components: {
+                    prop: newValue
+                }
+            })
+
+            expect(ecs.ecsGraph.entities[id].components.prop).to.equal(newValue)
+        })
+
+        it('should emit events when returning something in .each', async () => {
+            const entities = ecs.all
+                .where('prop', '==', value)
+                .get<{ prop: number }>()
+
+            const promise = new Promise<Entity[]>(res => {
+                ecs.ecsGraph.emitter.one('updateComponents', res)
+            })
+
+            entities.each(entity => {
+                entity.prop = 7
+
+                return 'prop'
+            })
+
+            const eventData = await promise
+
+            expect(eventData[0].components.prop).to.equal(7)
         })
     })
 })

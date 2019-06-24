@@ -17,7 +17,7 @@ import { KeyboardInput } from '@eix/input'
 const tile = (row: number, column: number): Tile => ({
     row,
     column,
-    size: 60,
+    size: 30,
     color: 'black',
     tile: true
 })
@@ -49,7 +49,8 @@ export const main = (canvas: HTMLCanvasElement): void => {
 
     const ecs = new Ecs({
         changeDetection: 'manual', // default
-        groupEvents: false
+        groupEvents: false,
+        setComponentOnUpdate: false
     })
 
     loop.setDraw((): void => {
@@ -89,7 +90,7 @@ export const main = (canvas: HTMLCanvasElement): void => {
             jumping: 0.75
         },
         speed: [0, 0],
-        position: [60, 60],
+        position: [100, 100],
         scale: [30, 30],
         color: 'green'
     })

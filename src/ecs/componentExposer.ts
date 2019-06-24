@@ -28,13 +28,17 @@ export class ComponentExposer<T> {
     public snapshot(): TypedEntity<T>[] {
         const entities: TypedEntity<T>[] = []
 
-        for (const id of this.node.snapshot.values()) {
+        for (const id of this.ids()) {
             entities.push((this.ecsGraph.entities[
                 id
             ] as unknown) as TypedEntity<T>)
         }
 
         return entities
+    }
+
+    public ids(): number[] {
+        return Array.from(this.node.snapshot.values())
     }
 
     public first(): T {
@@ -64,7 +68,14 @@ export class ComponentExposer<T> {
                 const changedComponents: Record<string, unknown> = {}
 
                 for (const key of modified) {
-                    changedComponents[key] = true
+                    if (this.ecsGraph.options.setComponentOnUpdate) {
+                        changedComponents[key] = (components as Record<
+                            string,
+                            unknown
+                        >)[key]
+                    } else {
+                        changedComponents[key] = true
+                    }
                 }
 
                 this.ecsGraph.pushEventToQueue('updateComponents', {
