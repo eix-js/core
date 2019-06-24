@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Visualisation</title>
+
+    <script src="node_modules/vis/dist/vis.js"></script> 
+    <link href="node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div></div>
+
+    <script type=module>
+        import { Ecs } from "./node_modules/@eix/core/dist/bundle.esm.js"   
+
+        const ecs = new Ecs()
+
+        ecs.all.flag('i')
+        ecs.all.flag('i','j')
+        ecs.all.flag('i').flag('j')
+        ecs.all.flag('i','k')
+        ecs.all.flag('k','j')
+        ecs.all.flag('i','k','j')
+        ecs.all.flag('i','j','k')
+        ecs.all.flag('j','k','i')
+        ecs.all.flag('j','i','k')
+        ecs.all.flag('k','j','i')
+        ecs.all.flag('k','i','j')
+
+        const ecsNodes = []
+        const ecsEdges = []
+
+        for (let i of Object.values(ecs.ecsGraph.QueryGraph)){
+            ecsNodes.push({
+                id: i.id,
+                label: (i.filters[0]) ? i.filters[0].name : i.id.toString()
+            })
+
+            for (let j of i.outputsTo){
+                ecsEdges.push({
+                    from: i.id,
+                    to: j
+                })
+            }
+        }
+
+        const nodes = new vis.DataSet(ecsNodes)
+        const edges = new vis.DataSet(ecsEdges)
+
+        const data = {
+            nodes,
+            edges
+        }
+
+        const options = {
+            physics: {
+                enabled: true
+            },
+            edges: {
+                arrows: 'to'
+            }
+        }
+
+        const network = new vis.Network(
+            document.querySelector('div'),
+            data,
+            options
+        )
+
+    </script>
+
+    <style>
+        html,body,div{
+            padding: 0%;
+            margin: 0%;
+            height: 100%;
+            width: 100%;
+            display: block;
+            background: #444444;
+        }
+    </style>
+</body>
+</html>

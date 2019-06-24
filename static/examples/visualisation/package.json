@@ -1,0 +1,13 @@
+{
+	"name": "visualisation",
+	"version": "1.0.0",
+	"dependencies": {
+		"@eix/core": "file:../..",
+		"nano-server": "^0.5.4",
+		"vis": "^4.21.0"
+	},
+	"scripts": {
+		"start": "nano-server"
+	},
+	"devDependencies": {}
+}
