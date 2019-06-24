@@ -1,3 +1,7 @@
+/**
+ * @module Ecs
+ */
+
 import { EcsGraph } from './ecsGraph'
 import { EcsOptions } from '../types'
 import { QueryNode } from './queryNode'

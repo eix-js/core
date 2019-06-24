@@ -1,10 +1,10 @@
-import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, EntityFilterInitter, operator } from '../types'
-import { ComponentExposer } from './componentExposer'
-
 /**
  * @module QueryNode
  */
+
+import { EcsGraph } from './ecsGraph'
+import { QueryGraphNode, EntityFilterInitter, operator } from '../types'
+import { ComponentExposer } from './componentExposer'
 
 export class QueryNode {
     private ecsGraph: EcsGraph

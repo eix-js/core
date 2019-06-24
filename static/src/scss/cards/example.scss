@@ -3,21 +3,25 @@
 @import '../colors.scss';
 
 .example {
-	background-color: $blue;
+    background-color: $blue;
 
-	canvas {
-		height: 50%;
-		width: 50%;
-		background-color: #888888;
-	}
+    flex-direction: row;
 
-	div {
-		width: 45%;
-	}
+    #canvas {
+        height: 100%;
+        width: 50%;
+        background-color: #888888;
+    }
+
+    .vis {
+        background-color: blue;
+        height: 100%;
+        width: 50%;
+    }
 }
 
 @media screen and (max-width: 500px) {
-	.example {
-		display: none !important;
-	}
+    .example {
+        display: none !important;
+    }
 }

@@ -1,3 +1,7 @@
+/**
+ * @module Defaults
+ */
+
 import { EcsOptions, Entity } from './types'
 
 export const defaultEcsOptions: EcsOptions = {

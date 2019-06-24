@@ -1,3 +1,7 @@
+/**
+ * @module Types
+ */
+
 import { EcsGraph } from './ecs/ecsGraph'
 
 /**

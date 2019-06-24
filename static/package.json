@@ -1,35 +1,37 @@
 {
-	"name": "static",
-	"version": "1.0.0",
-	"private": true,
-	"scripts": {
-		"start": "webpack-dev-server --open --mode development",
-		"build": "webpack --mode production"
-	},
-	"devDependencies": {
-		"@types/mainloop.js": "^1.0.5",
-		"css-loader": "^3.0.0",
-		"file-loader": "^4.0.0",
-		"html-loader": "^0.5.5",
-		"html-webpack-plugin": "^3.2.0",
-		"image-webpack-loader": "^5.0.0",
-		"mini-css-extract-plugin": "^0.7.0",
-		"node-sass": "^4.12.0",
-		"sass-loader": "^7.1.0",
-		"source-map-loader": "^0.2.4",
-		"style-loader": "^0.23.1",
-		"terser-webpack-plugin": "^1.3.0",
-		"ts-loader": "^6.0.3",
-		"typescript": "^3.5.2",
-		"webpack": "^4.34.0",
-		"webpack-cli": "^3.3.4",
-		"webpack-dev-server": "^3.7.2"
-	},
-	"dependencies": {
-		"@eix/core": "file:..",
-		"@eix/input": "git+https://github.com/eix-js/input.git",
-		"haunted": "^4.4.0",
-		"lit-html": "^1.1.0",
-		"mainloop.js": "^1.0.4"
-	}
+    "name": "static",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start": "webpack-dev-server --open --mode development",
+        "build": "webpack --mode production"
+    },
+    "devDependencies": {
+        "@types/mainloop.js": "^1.0.5",
+        "@types/vis": "^4.21.17",
+        "css-loader": "^3.0.0",
+        "file-loader": "^4.0.0",
+        "html-loader": "^0.5.5",
+        "html-webpack-plugin": "^3.2.0",
+        "image-webpack-loader": "^5.0.0",
+        "mini-css-extract-plugin": "^0.7.0",
+        "node-sass": "^4.12.0",
+        "sass-loader": "^7.1.0",
+        "source-map-loader": "^0.2.4",
+        "style-loader": "^0.23.1",
+        "terser-webpack-plugin": "^1.3.0",
+        "ts-loader": "^6.0.3",
+        "typescript": "^3.5.2",
+        "webpack": "^4.34.0",
+        "webpack-cli": "^3.3.4",
+        "webpack-dev-server": "^3.7.2"
+    },
+    "dependencies": {
+        "@eix/core": "file:..",
+        "@eix/input": "git+https://github.com/eix-js/input.git",
+        "haunted": "^4.4.0",
+        "lit-html": "^1.1.0",
+        "mainloop.js": "^1.0.4",
+        "vis": "^4.21.0"
+    }
 }
