@@ -13,6 +13,7 @@ import { control } from './jobs/control'
 import { camera } from './render/camera'
 import { moveCamera } from './jobs/moveCamera'
 import { KeyboardInput } from '@eix/input'
+import { resize, enviroment } from './env'
 
 const tileSize = 30
 
@@ -116,4 +117,11 @@ export const main = (canvas: HTMLCanvasElement): void => {
         drawTiles(ecs, ctx),
         drawGameObjects(ecs, ctx)
     ]
+
+    window.addEventListener('resize', () => {
+        resize()
+
+        canvas.width = enviroment.screenSize[0]
+        canvas.height = enviroment.screenSize[1]
+    })
 }
