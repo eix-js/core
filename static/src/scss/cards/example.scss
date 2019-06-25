@@ -9,7 +9,7 @@
 .example {
     display: grid;
     grid-template-columns: 50% 50%;
-    grid-template-rows: 10% 20% 70%;
+    grid-template-rows: auto 70%;
     background-color: lightgrey;
 
     * {
@@ -27,26 +27,21 @@
     }
 
     .vis {
-        @include background();
-        background-image: url('./assets/graph.png');
-        background-size: contain;
-        background-attachment: local;
-        background-blend-mode: multiply;
-        grid-row-start: 3;
+        grid-row-start: 2;
     }
 
     .text {
         @include description();
-        font-size: 1.5em;
+        font-size: 3em;
         overflow: hidden;
         margin: 0;
         padding: 10;
-        grid-row-start: 2;
+        grid-row-start: 1;
     }
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 900px) {
     .example {
-        display: none !important;
+        grid-template-columns: 0% 100%;
     }
 }
