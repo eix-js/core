@@ -1,7 +1,6 @@
 import { Ecs } from '@eix/core'
 import loop from 'mainloop.js'
-import { Tile, Player, Camera } from './types'
-import { Network, DataSet } from 'vis'
+import { Tile, Player, Camera, TilemapData, vector2 } from './types'
 
 //@ts-ignore
 import map from './maps/small'
@@ -15,10 +14,12 @@ import { camera } from './render/camera'
 import { moveCamera } from './jobs/moveCamera'
 import { KeyboardInput } from '@eix/input'
 
+const tileSize = 30
+
 const tile = (row: number, column: number): Tile => ({
     row,
     column,
-    size: 30,
+    size: tileSize,
     color: 'black',
     tile: true
 })
@@ -36,12 +37,16 @@ function loadMap(ecs: Ecs) {
             ecs.addEntity(tile(floor(i / size), i % size))
         }
     }
+
+    ecs.addEntity<TilemapData>({
+        tilemap: true,
+        size: [map.width, map.height].map(
+            size => (size - 1) * tileSize
+        ) as vector2
+    })
 }
 
-export const main = (
-    canvas: HTMLCanvasElement,
-    container: HTMLDivElement
-): void => {
+export const main = (canvas: HTMLCanvasElement): void => {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
     const key = new KeyboardInput('q')
@@ -111,51 +116,4 @@ export const main = (
         drawTiles(ecs, ctx),
         drawGameObjects(ecs, ctx)
     ]
-
-    if (true) {
-        // do this for the query graph to look cooler
-        if (false) {
-            ecs.all.flag('player', 'tile', 'camera')
-            ecs.all.flag('player', 'camera', 'gameobject')
-            ecs.all.flag('player', 'gameobject')
-        }
-
-        ecs.ecsGraph.resolve()
-
-        const ecsNodes = []
-        const ecsEdges = []
-
-        for (let i of Object.values(ecs.ecsGraph.QueryGraph)) {
-            ecsNodes.push({
-                id: i.id,
-                label: i.filters[0] ? i.filters[0].name : i.id.toString()
-            })
-
-            for (let j of i.outputsTo) {
-                ecsEdges.push({
-                    from: i.id,
-                    to: j
-                })
-            }
-        }
-
-        const nodes = new DataSet(ecsNodes)
-        const edges = new DataSet(ecsEdges)
-
-        const data = {
-            nodes,
-            edges
-        }
-
-        const options = {
-            physics: {
-                enabled: true
-            },
-            edges: {
-                arrows: 'to'
-            }
-        }
-
-        new Network(container, data, options)
-    }
 }

@@ -1,42 +1,40 @@
+// mixins:
 @import '../mixins/background.scss';
 @import '../mixins/flex.scss';
+@import '../mixins/description.scss';
 
 .contributors {
-	@include background();
-	background-image: url('./assets/wall.png');
+    @include background();
+    background-image: url('./assets/wall.png');
 
-	background-color: wheat;
-	background-blend-mode: luminosity;
+    background-color: wheat;
+    background-blend-mode: luminosity;
 
-	flex-direction: column;
-	justify-content: center;
+    flex-direction: column;
+    justify-content: center;
 
-	#description {
-		text-align: center;
-		color: white;
-		text-shadow: 2px 2px black;
-		font-size: 2em;
-		font-family: $heading;
-		margin: 10px;
-	}
+    #description {
+        @include description();
+        font-size: 2em;
+    }
 
-	#list {
-		width: 10em;
-		@include flex();
-		flex-direction: row;
-		justify-content: space-evenly;
+    #list {
+        width: 10em;
+        @include flex();
+        flex-direction: row;
+        justify-content: space-evenly;
 
-		.avatar > img {
-			height: 3em;
-			border-radius: 50%;
-		}
+        .avatar > img {
+            height: 3em;
+            border-radius: 50%;
+        }
 
-		#Neverix {
-			border-radius: 0;
-		}
-	}
+        #Neverix {
+            border-radius: 0;
+        }
+    }
 
-	.contributor {
-		color: white;
-	}
+    .contributor {
+        color: white;
+    }
 }

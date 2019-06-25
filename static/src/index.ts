@@ -12,4 +12,4 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement
 canvas.height = enviroment.screenSize[1]
 canvas.width = enviroment.screenSize[0]
 
-main(canvas, document.querySelector('.vis'))
+main(canvas)

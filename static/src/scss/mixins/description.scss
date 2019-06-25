@@ -1,0 +1,8 @@
+@mixin description {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px black;
+    font-size: 3em;
+    font-family: $heading;
+    margin: 10px;
+}

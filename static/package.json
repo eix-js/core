@@ -8,7 +8,6 @@
     },
     "devDependencies": {
         "@types/mainloop.js": "^1.0.5",
-        "@types/vis": "^4.21.17",
         "css-loader": "^3.0.0",
         "file-loader": "^4.0.0",
         "html-loader": "^0.5.5",
@@ -31,7 +30,6 @@
         "@eix/input": "git+https://github.com/eix-js/input.git",
         "haunted": "^4.4.0",
         "lit-html": "^1.1.0",
-        "mainloop.js": "^1.0.4",
-        "vis": "^4.21.0"
+        "mainloop.js": "^1.0.4"
     }
 }

@@ -32,3 +32,8 @@ export interface Camera {
     speed: number
     position: vector2
 }
+
+export interface TilemapData {
+    tilemap: true
+    size: vector2
+}

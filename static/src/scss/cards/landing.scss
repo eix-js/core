@@ -3,22 +3,18 @@
 
 // mixins:
 @import '../mixins/background.scss';
+@import '../mixins/description.scss';
 
 .top {
-	@include background();
-	background-image: url('./assets/wall.png');
+    @include background();
+    background-image: url('./assets/wall.png');
 }
 
 .logo {
-	width: 33vh;
-	display: block;
+    width: 33vh;
+    display: block;
 }
 
 .description {
-	text-align: center;
-	color: white;
-	text-shadow: 2px 2px black;
-	font-size: 3em;
-	font-family: $heading;
-	margin: 10px;
+    @include description();
 }
