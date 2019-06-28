@@ -1,4 +1,6 @@
-# eix-core
+[![Build Status](https://img.shields.io/travis/eix-js/core.svg)](https://travis-ci.com/eix-js/core) [![License](https://img.shields.io/github/license/eix-js/core.svg)](https://github.com/eix-js/core/blob/master/LICENSE.md) [![Version](https://img.shields.io/github/package-json/v/eix-js/core.svg)](https://github.com/eix-js/core)
+
+# Eix-core
 the core of the eix game engine
 
 # Getting started 
@@ -14,8 +16,16 @@ import { Ecs } from '@eix/core'
 
 Ecs is the main class exposed by this engine:
 ```ts
-...
-const ecs = new Ecs(false) // async mode is true by default, and even if its faster, it can be pretty counter-intuitive for begginers
+const ecs = new Ecs()
+
+ecs.addEntity({
+    prop: true
+})
+
+ecs
+    .flag('prop')
+    .get<{prop:boolean}>()
+    .each({prop} => console.log(prop)) // true
 ```
 
 # Playing around with the source:
