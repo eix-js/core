@@ -94,6 +94,8 @@
         "typescript": "^3.4.4"
     },
     "dependencies": {
-        "ee-ts": "^1.0.1"
+        "coveralls": "^3.0.4",
+        "ee-ts": "^1.0.1",
+        "nyc": "^14.1.1"
     }
 }
