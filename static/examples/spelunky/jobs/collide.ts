@@ -49,8 +49,6 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
                     player.speed[1] = 0
                     player.state = 'ground'
 
-                    console.log('set state to ground')
-
                     inAir = false
                     toSolve[0] = false
                 }
