@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { Camera, Player, vector2, TilemapData } from '../types'
 import { enviroment } from '../env'
 

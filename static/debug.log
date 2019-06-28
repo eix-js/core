@@ -1,0 +1,9 @@
+[0628/135436.008:ERROR:process_reader_win.cc(151)] SuspendThread: Access is denied. (0x5)
+[0628/135436.016:ERROR:exception_snapshot_win.cc(98)] thread ID 10620 not found in process
+[0628/135436.017:ERROR:scoped_process_suspend.cc(40)] NtResumeProcess: An attempt was made to access an exiting process. (0xc000010a)
+[0628/135720.816:ERROR:process_info.cc(329)] VirtualQueryEx: Access is denied. (0x5)
+[0628/135720.816:ERROR:process_info.cc(550)] ReadMemoryInfo failed
+[0628/135720.816:ERROR:scoped_process_suspend.cc(40)] NtResumeProcess: An attempt was made to access an exiting process. (0xc000010a)
+[0628/140014.791:ERROR:process_reader_win.cc(151)] SuspendThread: Access is denied. (0x5)
+[0628/140014.793:ERROR:process_reader_win.cc(151)] SuspendThread: Access is denied. (0x5)
+[0628/140014.794:ERROR:exception_snapshot_win.cc(98)] thread ID 2896 not found in process

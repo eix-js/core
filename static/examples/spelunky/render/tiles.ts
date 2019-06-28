@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { Tile, vector2, Camera } from '../types'
 
 const screenSize = [window.innerWidth, window.innerHeight]

@@ -1,6 +1,6 @@
 export const enviroment = {
     physics: {
-        gravity: 0.001
+        gravity: 0.002
     },
     screenSize: [0, 0]
 }

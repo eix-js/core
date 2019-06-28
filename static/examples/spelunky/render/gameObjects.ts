@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { GameObject } from '../types'
 
 export const drawGameObjects = (

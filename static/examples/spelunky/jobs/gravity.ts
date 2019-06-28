@@ -1,12 +1,12 @@
-import { Ecs } from '@eix/core'
-import { where } from '../filters/where'
+import { Ecs } from '@eix-js/core'
+// import { where } from '../filters/where'
 import { playerState, Player } from '../types'
 import { enviroment } from '../env'
 
 export const applyGravity = (ecs: Ecs): ((delta: number) => void) => {
     const players = ecs.all
         .flag('player')
-        .pipe(...where<playerState>('state', '!=', 'ground'))
+        .where<playerState>('state', '!=', 'ground')
         .get<Player>()
 
     return (delta: number): void => {

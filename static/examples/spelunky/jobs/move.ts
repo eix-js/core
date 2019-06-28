@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { Player } from '../types'
 
 export const move = (ecs: Ecs): ((delta: number) => void) => {

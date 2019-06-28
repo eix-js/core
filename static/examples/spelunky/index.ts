@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import loop from 'mainloop.js'
 import { Tile, Player, Camera, TilemapData, vector2 } from './types'
 
@@ -58,7 +58,8 @@ export const main = (canvas: HTMLCanvasElement): void => {
     })
 
     const ecs = new Ecs({
-        setComponentOnUpdate: false
+        setComponentOnUpdate: true,
+        addComponentsIfTheyDontExist: true
     })
 
     loop.setDraw((): void => {
@@ -93,7 +94,7 @@ export const main = (canvas: HTMLCanvasElement): void => {
         player: true,
         gravity: {
             ground: 1,
-            sliding: 0.1,
+            sliding: 1.5,
             falling: 1.5,
             jumping: 0.75
         },

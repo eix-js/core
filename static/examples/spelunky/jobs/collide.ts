@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { Player, Tile } from '../types'
 import {
     flatLineIntersection,
@@ -14,7 +14,6 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
             const base = player.position[1] + player.scale[1]
 
             let inAir = true
-            let maybeSliding = false
 
             // top, right, bottom, left
             let toSolve = [...Array(4)].fill(true)
@@ -50,6 +49,8 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
                     player.speed[1] = 0
                     player.state = 'ground'
 
+                    console.log('set state to ground')
+
                     inAir = false
                     toSolve[0] = false
                 }
@@ -66,7 +67,6 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
                     player.position[0] = tileX - player.scale[0]
                     player.speed[0] = 0
 
-                    maybeSliding = true
                     toSolve[1] = false
                 }
 
@@ -96,7 +96,6 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
                     player.position[0] = tileX + tile.size
                     player.speed[0] = 0
 
-                    maybeSliding = true
                     toSolve[3] = false
                 }
 
@@ -106,11 +105,9 @@ export const collide = (ecs: Ecs): ((delta: number) => void) => {
             if (inAir) {
                 if (player.speed[1] < 0) {
                     player.state = 'jumping'
-                } else if (player.speed[1] > 0) {
+                } else if (player.speed[1] >= 0) {
                     player.state = 'falling'
                 }
-            } else if (maybeSliding) {
-                player.state = 'sliding'
             }
 
             return ['position', 'state', 'speed']

@@ -1,4 +1,4 @@
-import { Ecs } from '@eix/core'
+import { Ecs } from '@eix-js/core'
 import { Player } from '../types'
 // import { where } from '../filters/where'
 import { xor } from '../utils/xor'
@@ -11,7 +11,7 @@ export const control = (ecs: Ecs): ((delta: number) => void) => {
         .get<Player>()
 
     return (delta: number): void => {
-        players.each((player: Player): string => {
+        players.each((player: Player): string[] => {
             if (xor(inputs.left.value, inputs.right.value)) {
                 const direction = inputs.right.value ? 1 : -1
 
@@ -20,13 +20,13 @@ export const control = (ecs: Ecs): ((delta: number) => void) => {
 
             if (inputs.jump.value) {
                 if (player.state === 'ground') {
-                    player.speed[1] -= delta / 35
+                    player.speed[1] -= delta / 30
                 } else {
-                    player.speed[1] -= delta / 1000
+                    player.speed[1] -= delta / 1500
                 }
             }
 
-            return 'position'
+            return ['position', 'speed']
         })
     }
 }
