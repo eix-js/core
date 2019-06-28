@@ -58,8 +58,6 @@ export const main = (canvas: HTMLCanvasElement): void => {
     })
 
     const ecs = new Ecs({
-        changeDetection: 'manual', // default
-        groupEvents: false,
         setComponentOnUpdate: false
     })
 

@@ -1,5 +1,4 @@
-import { EcsGraph } from '@eix/core/dist/'
-import { EntityFilterInitter } from '../../../../dist/types'
+import { EcsGraph, EntityFilterInitter } from '@eix/core'
 
 export type operator = '==' | '!='
 
