@@ -3,7 +3,7 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { EcsOptions } from '../types'
+import { EcsOptions } from './types'
 import { QueryNode } from './queryNode'
 
 export class Ecs {

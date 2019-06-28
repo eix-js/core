@@ -2,33 +2,38 @@
  * @module Types
  */
 
-import { EcsGraph } from './ecs/ecsGraph'
+import { EcsGraph } from './ecsGraph'
+import { EventEmitter } from 'ee-ts'
 
 /**
  * @description options to be passed to the constructor of the main ecs class
  */
 export interface EcsOptions {
-    groupEvents: boolean
-    changeDetection: 'automatic' | 'manual'
     setComponentOnUpdate: boolean
     addComponentsIfTheyDontExist: boolean
 }
 
+export interface TypedEntity<T> {
+    id: number
+    components: T
+}
+
+export type UnTypedComponents = Record<string, unknown>
+
 /**
  * @description The base interface for entities used by the ecs class
  */
-export interface Entity {
-    id: number
-    components: Record<string, unknown>
-}
+export type Entity = TypedEntity<UnTypedComponents>
+
+export type EntityTest = (id: number) => boolean
 
 /**
  * @description Basic interface for filters
  */
 export interface EntityFilter {
     name: string
-    test: (id: number) => boolean
-    caresAbout: canCareAbout
+    test: EntityTest
+    dependencies: CanBeInfluencedBy
     lastValues: Record<number, boolean>
 }
 
@@ -37,6 +42,8 @@ export interface EntityFilterInitter {
     test: (ecs: EcsGraph, component: string) => (id: number) => boolean
 }
 
+export type EcsEventMap = Record<ecsEvent, (entity: Entity[]) => void>
+
 export interface HasInputs {
     inputsFrom: number[]
 }
@@ -44,14 +51,14 @@ export interface HasInputs {
 /**
  * @description The base graph node used by the computation graph of the ecs class.
  */
-export interface QueryGraphNode {
-    dependencies: canCareAbout
+export interface QueryGraphNode extends HasInputs {
+    dependencies: CanBeInfluencedBy
     id: number
     outputsTo: number[]
-    inputsFrom: number[]
     acceptsInputs: boolean
     snapshot: Set<number>
     filters: EntityFilter[]
+    emitter: EventEmitter<EcsEventMap>
 }
 
 /**
@@ -75,12 +82,7 @@ export type ecsEvent =
 /**
  * @description What components a filter / node needs to re-calculate on the change of.
  */
-export type canCareAbout = string[] | '*'
-
-export interface TypedEntity<T> {
-    id: number
-    components: T
-}
+export type CanBeInfluencedBy = string[] | '*'
 
 export interface Event {
     name: ecsEvent

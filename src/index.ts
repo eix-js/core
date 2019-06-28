@@ -1,2 +1,7 @@
 export * from './ecs/ecs'
 export * from './ecs/ecsGraph'
+export * from './ecs/componentExposer'
+export * from './ecs/defaultEcsOptions'
+export * from './ecs/queryNode'
+export * from './ecs/types'
+export * from './ecs/utils'

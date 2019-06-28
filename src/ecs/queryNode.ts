@@ -3,7 +3,7 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, EntityFilterInitter, operator } from '../types'
+import { QueryGraphNode, EntityFilterInitter, operator } from './types'
 import { ComponentExposer } from './componentExposer'
 
 export class QueryNode {
@@ -87,7 +87,7 @@ export class QueryNode {
             this.ecsGraph.addInputNodeToQueryGraph({
                 name: filter.name(component),
                 test: filter.test(this.ecsGraph, component),
-                caresAbout: [component],
+                dependencies: [component],
                 lastValues: {}
             })
         )

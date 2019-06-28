@@ -2,8 +2,13 @@
  * @module Utils
  */
 
-import { canCareAbout, EntityFilter, HasInputs, QueryGraphNode } from './types'
-import { EcsGraph } from './ecs/ecsGraph'
+import {
+    CanBeInfluencedBy,
+    EntityFilter,
+    HasInputs,
+    QueryGraphNode
+} from './types'
+import { EcsGraph } from './ecsGraph'
 
 /**
  * @description Used to only update filters if needed
@@ -13,7 +18,7 @@ import { EcsGraph } from './ecs/ecsGraph'
  * @returns Whether the filter need or doesnt need to be recalculated.
  */
 export function filterNeedsUpdate(
-    caresAbout: canCareAbout,
+    caresAbout: CanBeInfluencedBy,
     ...componentKeys: string[]
 ): boolean {
     if (caresAbout === '*') return true
@@ -32,27 +37,30 @@ export function filterNeedsUpdate(
  * @param filters - The filters of the input.
  * @returns What the node is influenced by.
  */
-export function composeInfluencedBy(...filters: EntityFilter[]): canCareAbout {
+export function composeInfluencedBy(
+    ...filters: EntityFilter[]
+): CanBeInfluencedBy {
     const whatAllFiltersCareOf = filters.map(
-        ({ caresAbout }: EntityFilter): canCareAbout => caresAbout
+        ({ dependencies: caresAbout }: EntityFilter): CanBeInfluencedBy =>
+            caresAbout
     )
 
-    let caresAbout: canCareAbout = '*'
+    let influencedBy: CanBeInfluencedBy = '*'
 
     if (!whatAllFiltersCareOf.includes('*')) {
-        caresAbout = Array.from(
+        influencedBy = Array.from(
             new Set(
                 whatAllFiltersCareOf.reduce(
                     (
-                        prev: canCareAbout,
-                        current: canCareAbout
-                    ): canCareAbout => [...prev, ...current]
+                        prev: CanBeInfluencedBy,
+                        current: CanBeInfluencedBy
+                    ): CanBeInfluencedBy => [...prev, ...current]
                 )
             ).values()
         )
     }
 
-    return caresAbout
+    return influencedBy
 }
 
 /**
@@ -100,7 +108,11 @@ export function removeDuplicates<T>(arr: T[]): T[] {
  * @param node - The node to check inputs for.
  * @returns An array with all ids of the inputs.
  */
-export function getInputs(ecsGraph: EcsGraph, node: HasInputs): number[] {
+export function getInputs(
+    ecsGraph: EcsGraph,
+    node: HasInputs,
+    root = true
+): number[] {
     const inputs = []
 
     for (let nodeId of node.inputsFrom) {
@@ -109,23 +121,52 @@ export function getInputs(ecsGraph: EcsGraph, node: HasInputs): number[] {
         if (!otherNode.acceptsInputs) {
             inputs.push(nodeId)
         } else {
-            inputs.push(...getInputs(ecsGraph, otherNode))
+            inputs.push(...getInputs(ecsGraph, otherNode, false))
         }
     }
 
-    return removeDuplicates(inputs)
+    if (root) return removeDuplicates(inputs)
+    else return inputs
 }
 
-export function getNodeChildren(ecsGraph: EcsGraph, ids: number[]): number[] {
+export function getNodeChildren(
+    ecsGraph: EcsGraph,
+    ids: number[],
+    root = true
+): number[] {
     if (!ids.length) return []
 
     const result: number[] = [...ids]
 
     ids.map((id: number): QueryGraphNode => ecsGraph.QueryGraph[id]).forEach(
         (node: QueryGraphNode): void => {
-            result.push(...getNodeChildren(ecsGraph, node.outputsTo))
+            result.push(...getNodeChildren(ecsGraph, node.outputsTo, false))
         }
     )
 
-    return removeDuplicates(result)
+    if (root) return removeDuplicates(result)
+    else return result
+}
+
+export function addEntityToSnapshot(entityId: number, node: QueryGraphNode) {
+    node.snapshot.add(entityId)
+    node.emitter.emit('addEntity', [
+        {
+            id: entityId,
+            components: {}
+        }
+    ])
+}
+
+export function removeEntityFromSnapshot(
+    entityId: number,
+    node: QueryGraphNode
+) {
+    node.snapshot.delete(entityId)
+    node.emitter.emit('removeEntity', [
+        {
+            id: entityId,
+            components: {}
+        }
+    ])
 }

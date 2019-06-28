@@ -3,11 +3,12 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, canCareAbout, TypedEntity } from '../types'
+import { QueryGraphNode, CanBeInfluencedBy, TypedEntity } from './types'
 
 export class ComponentExposer<T> {
     private ecsGraph: EcsGraph
     private node: QueryGraphNode
+    private _snapshot = new Set<TypedEntity<T>>()
 
     /**
      * @description Used to easily acces all component of a query
@@ -18,6 +19,34 @@ export class ComponentExposer<T> {
     public constructor(ecsGraph: EcsGraph, node: QueryGraphNode) {
         this.ecsGraph = ecsGraph
         this.node = node
+
+        for (const id of this.ids()) {
+            this.addToSnapshot(id)
+        }
+
+        this.node.emitter.on('addEntity', entities => {
+            for (const { id } of entities) {
+                this.addToSnapshot(id)
+            }
+        })
+
+        this.node.emitter.on('removeEntity', entities => {
+            for (const { id } of entities) {
+                this.removeFromSnapshot(id)
+            }
+        })
+    }
+
+    private addToSnapshot(id: number) {
+        this._snapshot.add((this.ecsGraph.entities[
+            id
+        ] as unknown) as TypedEntity<T>)
+    }
+
+    private removeFromSnapshot(id: number) {
+        this._snapshot.delete((this.ecsGraph.entities[
+            id
+        ] as unknown) as TypedEntity<T>)
     }
 
     /**
@@ -26,15 +55,7 @@ export class ComponentExposer<T> {
      * @returns An array with all entities.
      */
     public snapshot(): TypedEntity<T>[] {
-        const entities: TypedEntity<T>[] = []
-
-        for (const id of this.ids()) {
-            entities.push((this.ecsGraph.entities[
-                id
-            ] as unknown) as TypedEntity<T>)
-        }
-
-        return entities
+        return Array.from(this._snapshot.values())
     }
 
     public ids(): number[] {
@@ -46,15 +67,12 @@ export class ComponentExposer<T> {
     }
 
     public each(
-        callback: (entity: T) => boolean | canCareAbout | string | void
+        callback: (entity: T) => boolean | CanBeInfluencedBy | string | void
     ) {
-        for (const { components, id } of this.snapshot()) {
+        for (const { components, id } of this._snapshot.values()) {
             const result = callback(components as T)
 
-            if (
-                this.ecsGraph.options.changeDetection === 'manual' &&
-                result !== undefined
-            ) {
+            if (result !== undefined) {
                 let modified: string[] = []
 
                 if (result instanceof Array && result.length) {
@@ -78,7 +96,7 @@ export class ComponentExposer<T> {
                     }
                 }
 
-                this.ecsGraph.pushEventToQueue('updateComponents', {
+                this.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: changedComponents
                 })

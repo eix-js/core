@@ -1,7 +1,7 @@
 import { Ecs } from '../../src/ecs/ecs'
 import { expect } from 'chai'
 import { random } from '../utils/random'
-import { Entity } from '../../src/types'
+import { Entity } from '../../src'
 
 describe('The ecs instance', (): void => {
     let ecs: Ecs
@@ -85,7 +85,7 @@ describe('The ecs instance', (): void => {
         it('should set the components when reciving the events', () => {
             const newValue = random(10, 100)
 
-            ecs.ecsGraph.pushEventToQueue('updateComponents', {
+            ecs.ecsGraph.handleEvent('updateComponents', {
                 id,
                 components: {
                     prop: newValue
@@ -113,6 +113,20 @@ describe('The ecs instance', (): void => {
             const eventData = await promise
 
             expect(eventData[0].components.prop).to.equal(7)
+        })
+    })
+
+    describe('The node events', () => {
+        it('should update the queries based on events', () => {
+            const query = ecs.all.flag('prop').get<{ prop: true }>()
+
+            expect(query.snapshot()).to.have.length(0)
+
+            const id = ecs.addEntity({ prop: true })
+            expect(query.snapshot()).to.have.length(1)
+
+            ecs.removeEntity(id)
+            expect(query.snapshot(), 'after removing entity').to.have.length(0)
         })
     })
 })

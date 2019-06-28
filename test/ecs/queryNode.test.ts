@@ -1,6 +1,4 @@
-import { QueryNode } from '../../src/ecs/queryNode'
-import { Ecs } from '../../src/ecs/ecs'
-import { ComponentExposer } from '../../src/ecs/componentExposer'
+import { QueryNode, Ecs, ComponentExposer } from '../../src'
 import { expect } from 'chai'
 import { random } from '../utils/random'
 
@@ -57,7 +55,7 @@ describe('The queryNode instance', () => {
             })
 
             it('shoudnt change anything when updating a component wich isnt flagged', () => {
-                ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                ecs.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: {
                         prop: 8
@@ -68,7 +66,7 @@ describe('The queryNode instance', () => {
             })
 
             it('should change when updating a flagged component', () => {
-                ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                ecs.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: {
                         flag: false
@@ -81,7 +79,7 @@ describe('The queryNode instance', () => {
                     flag: false
                 })
 
-                ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                ecs.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: {
                         flag: true
@@ -146,7 +144,7 @@ describe('The queryNode instance', () => {
                     // flag2: false
                 })
 
-                ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                ecs.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: {
                         flag: true,
@@ -162,7 +160,7 @@ describe('The queryNode instance', () => {
                     flag: true
                 })
 
-                ecs.ecsGraph.pushEventToQueue('updateComponents', {
+                ecs.ecsGraph.handleEvent('updateComponents', {
                     id,
                     components: {
                         flag: false,
