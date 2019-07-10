@@ -1,6 +1,6 @@
 {
     "name": "@eix-js/core",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "the core of the eix game engine",
     "main": "dist/bundle.cjs.js",
     "module": "dist/bundle.esm.js",
