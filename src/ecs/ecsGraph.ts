@@ -7,22 +7,26 @@ import { EventEmitter } from 'ee-ts'
 import {
     EcsOptions,
     Entity,
-    QueryGraphNode,
+    NodeData,
     ecsEvent,
-    EntityFilter,
     UnTypedComponents,
-    EcsEventMap
+    EcsEventMap,
+    EntityFilterInitter,
+    Dependency,
+    EntityTest
 } from './types'
 import { defaultEcsOptions, defaultEntity } from './defaultEcsOptions'
 import {
-    filterNeedsUpdate,
-    composeInfluencedBy,
+    nodeNeedsUpdate,
     compareArrays,
-    getInputs,
-    getNodeChildren,
     addEntityToSnapshot,
-    removeEntityFromSnapshot
+    removeEntityFromSnapshot,
+    setToArray
 } from './utils'
+import { IGraph, IGraphNode, INodeId } from '../modules/graph/classes/IGraph'
+import { hashCode, LruCache } from '@eix-js/utils'
+import { InfluenceTable } from '../modules/graph/classes/InfluenceTable'
+import { entityId } from '../modules/ecs/types/entityId'
 
 export class EcsGraph {
     /**
@@ -43,17 +47,12 @@ export class EcsGraph {
     /**
      * @description Table remembering what entity influences what inputs.
      */
-    private entitiesToGraphInputTable: Record<number, Set<number>> = {}
+    private infulenceTable = new InfluenceTable()
 
     /**
      * @description The computation graph of the ecs.
      */
-    public QueryGraph: Record<number, QueryGraphNode> = {}
-
-    /**
-     * @description Holds the ids of all inputs to QueryGraph.
-     */
-    private graphInputs: number[] = []
+    public QueryGraph = new IGraph<NodeData>()
 
     public emitter = new EventEmitter<EcsEventMap>()
 
@@ -76,18 +75,15 @@ export class EcsGraph {
         return id
     }
 
-    private updateComplexNode(entityId: number, nodeId: number): this {
-        const node = this.QueryGraph[nodeId]
-
-        if (node && node.acceptsInputs) {
+    private updateComplexNode(
+        entityId: number,
+        node: IGraphNode<NodeData>
+    ): this {
+        if (node && !node.input) {
             let shouldAddEntity = true
 
-            for (const input of node.inputsFrom) {
-                const inputNode = this.QueryGraph[input]
-
-                if (!inputNode) continue
-
-                if (!inputNode.snapshot.has(entityId)) {
+            for (const inputNode of node.previous) {
+                if (!inputNode.data.snapshot.has(entityId)) {
                     removeEntityFromSnapshot(entityId, node)
                     shouldAddEntity = false
                     break
@@ -103,60 +99,40 @@ export class EcsGraph {
     }
 
     private updateInputNodes(
-        entityId: number,
+        entityId: entityId,
         ...componentKeys: string[]
     ): this {
-        const influencednputs = this.entitiesToGraphInputTable[entityId]
+        const influencednputs = this.infulenceTable.getArray(entityId)
 
-        if (influencednputs) {
-            const nodesToUpdate = new Set<number>()
+        const nodesToUpdate = new Set<IGraphNode<NodeData>>()
+        const influencedNodes = this.QueryGraph.getBulk(...influencednputs)
 
-            const influencedNodes = Array.from(influencednputs.values()).map(
-                (id: number): QueryGraphNode => this.QueryGraph[id]
-            )
+        const nodesWichNeedUpdate = influencedNodes.filter(node =>
+            nodeNeedsUpdate(node.data.dependencies, ...componentKeys)
+        )
 
-            for (const node of influencedNodes) {
-                let somethingChanged = false
+        for (const node of nodesWichNeedUpdate) {
+            const { test, cache } = node.data
+            const testResult = test(entityId)
 
-                for (const filter of node.filters) {
-                    if (
-                        filterNeedsUpdate(filter.dependencies, ...componentKeys)
-                    ) {
-                        const testResult = filter.test(entityId)
+            if (testResult !== cache.get(entityId)) {
+                cache.set(entityId, testResult)
 
-                        if (testResult !== filter.lastValues[entityId]) {
-                            filter.lastValues[entityId] = testResult
-                            somethingChanged = true
-                        }
-                    }
+                if (!testResult) {
+                    removeEntityFromSnapshot(entityId, node)
+                } else {
+                    addEntityToSnapshot(entityId, node)
                 }
 
-                if (somethingChanged) {
-                    const oldSize = node.snapshot.size
-
-                    if (
-                        node.filters.find(
-                            ({ lastValues }: EntityFilter): boolean =>
-                                lastValues[entityId] === false
-                        )
-                    ) {
-                        removeEntityFromSnapshot(entityId, node)
-                    } else {
-                        addEntityToSnapshot(entityId, node)
-                    }
-
-                    if (node.snapshot.size !== oldSize) {
-                        for (const outputNode of node.outputsTo) {
-                            nodesToUpdate.add(outputNode)
-                        }
-                    }
+                for (const outputNode of node.next) {
+                    nodesToUpdate.add(outputNode)
                 }
             }
+        }
 
-            if (nodesToUpdate.size) {
-                for (const id of nodesToUpdate) {
-                    this.updateComplexNode(entityId, id)
-                }
+        if (nodesToUpdate.size) {
+            for (const node of nodesToUpdate.values()) {
+                this.updateComplexNode(entityId, node)
             }
         }
 
@@ -167,22 +143,18 @@ export class EcsGraph {
         entityId: number,
         ...componentKeys: string[]
     ): this {
-        let influencednputs = this.entitiesToGraphInputTable[entityId]
+        let influencednputs = this.infulenceTable.get(entityId)
 
-        if (!influencednputs) {
-            const newSet = new Set<number>()
-            this.entitiesToGraphInputTable[entityId] = newSet
-            influencednputs = newSet
-        }
+        const nodesWichMayNeedUpdate = setToArray(this.QueryGraph.inputs)
+            .filter(id => !influencednputs.has(id))
+            .map(id => this.QueryGraph.get(id))
 
-        const nodes = this.graphInputs
-            .filter((id: number): boolean => !influencednputs.has(id))
-            .map((id: number): QueryGraphNode => this.QueryGraph[id])
+        const nodes = nodesWichMayNeedUpdate.filter(node =>
+            nodeNeedsUpdate(node.data.dependencies, ...componentKeys)
+        )
 
         for (const node of nodes) {
-            if (filterNeedsUpdate(node.dependencies, ...componentKeys)) {
-                influencednputs.add(node.id)
-            }
+            influencednputs.add(node.id)
         }
 
         return this.updateInputNodes(entityId, ...componentKeys)
@@ -199,16 +171,19 @@ export class EcsGraph {
         switch (name) {
             case 'addEntity':
                 for (const entity of entities) {
-                    this.entities[entity.id] = entity
-
-                    const componentKeys = Object.keys(entity.components)
-                    if (componentKeys.length) {
-                        this.updateInfluenceTable(entity.id, ...componentKeys)
+                    this.entities[entity.id] = {
+                        id: entity.id,
+                        components: {}
                     }
+
+                    this.infulenceTable.addInput(entity.id)
+
+                    this.handleEvent('addComponents', entity)
                 }
                 break
             case 'addComponents':
                 for (const entity of entities) {
+                    // Thus merges the compoennts
                     this.entities[entity.id].components = {
                         ...this.entities[entity.id].components,
                         ...entity.components
@@ -254,22 +229,18 @@ export class EcsGraph {
                 break
             case 'removeEntity':
                 for (const { id } of entities) {
-                    const influences = this.entitiesToGraphInputTable[id]
-                    let ids = influences ? Array.from(influences.values()) : []
+                    const influences = this.infulenceTable.getArray(id)
 
                     // this is recurisve so i made a different function
-                    const children = getNodeChildren(this, ids).map(
-                        (id: number): QueryGraphNode => this.QueryGraph[id]
+                    const children = this.QueryGraph.getNodesChildren(
+                        this.QueryGraph.getBulk(...influences)
                     )
 
                     for (const child of children) {
                         removeEntityFromSnapshot(id, child)
-
-                        for (const { lastValues } of child.filters) {
-                            delete lastValues[id]
-                        }
                     }
 
+                    this.infulenceTable.removeInput(id)
                     delete this.entities[id]
                 }
             default:
@@ -306,82 +277,55 @@ export class EcsGraph {
      * @param filters - The filters the node must have.
      * @returns The id of the node.
      */
-    public addInputNodeToQueryGraph(...filters: EntityFilter[]): number {
-        const names = filters.map((filter: EntityFilter): string => filter.name)
+    public addInputNodeToQueryGraph(filter: EntityFilterInitter): number {
+        const hash = hashCode(filter.key)
+        const node = this.QueryGraph.get(hash)
 
-        for (const id of this.graphInputs) {
-            const node = this.QueryGraph[id]
-            const nodeNames = node.filters.map(
-                (filter: EntityFilter): string => filter.name
-            )
+        if (node) return node.id
 
-            if (compareArrays<string>(nodeNames, names)) {
-                return id
-            }
-        }
-
-        const id = this.lastId++
-
-        const influencedBy = composeInfluencedBy(...filters)
         const snapshot = new Set<number>()
 
-        for (const entity of this.allEntities) {
+        for (const { id, components } of this.allEntities) {
             if (
-                filterNeedsUpdate(
-                    influencedBy,
-                    ...Object.keys(entity.components)
-                )
+                nodeNeedsUpdate(filter.dependencies, ...Object.keys(components))
             ) {
-                let good = true
+                this.infulenceTable.get(id).add(hash)
 
-                this.entitiesToGraphInputTable[entity.id].add(id)
-
-                for (const filter of filters) {
-                    const result = filter.test(entity.id)
-                    filter.lastValues[entity.id] = result
-
-                    if (!result) {
-                        good = false
-                        continue
-                    }
-                }
-
-                if (good) {
-                    snapshot.add(entity.id)
+                if (filter.test(id)) {
+                    snapshot.add(id)
                 }
             }
         }
 
-        this.QueryGraph[id] = {
-            id,
-            dependencies: influencedBy,
-            outputsTo: [],
-            inputsFrom: [],
-            acceptsInputs: false,
-            snapshot,
-            filters,
-            emitter: new EventEmitter<EcsEventMap>()
-        }
+        const { test, dependencies } = filter
 
-        this.graphInputs.push(id)
+        this.QueryGraph.addNode(
+            ...this.createNode({
+                input: true,
+                hash,
+                dependencies,
+                snapshot,
+                test
+            })
+        )
 
-        return id
+        return hash
     }
 
-    public addComplexNode(...inputNodes: number[]): number {
-        const inputs = getInputs(this, {
-            inputsFrom: inputNodes
+    public addComplexNode(...inputHashes: number[]): number {
+        const inputNodes = this.QueryGraph.getBulk(...inputHashes)
+
+        const maxDepthInputs = this.QueryGraph.getInputs({
+            previous: new Set(inputNodes)
         })
 
-        for (const node of Object.values(this.QueryGraph)) {
-            if (!node.acceptsInputs) continue
+        for (const node of this.QueryGraph.nodes.values()) {
+            if (node.input) continue
 
             if (
                 compareArrays(
-                    inputs,
-                    getInputs(this, {
-                        inputsFrom: this.QueryGraph[node.id].inputsFrom
-                    }),
+                    maxDepthInputs,
+                    this.QueryGraph.getInputs(node),
                     true
                 )
             ) {
@@ -389,39 +333,66 @@ export class EcsGraph {
             }
         }
 
-        const id = this.lastId++
-        const entityIdMap: Record<number, number> = {}
+        const hash = hashCode(`Ecs-${this.lastId++}`)
+        const entityIdMap = new Map<number, number>()
 
-        const nodes = inputNodes.map(id => this.QueryGraph[id])
+        const snapshot = new Set<number>()
 
-        for (const node of nodes) {
-            node.outputsTo.push(id)
+        for (const node of inputNodes) {
+            for (const entityId of node.data.snapshot) {
+                let count = entityIdMap.get(entityId)
 
-            for (const entityId of node.snapshot) {
-                if (entityIdMap[entityId]) entityIdMap[entityId]++
-                else entityIdMap[entityId] = 1
+                if (count) {
+                    entityIdMap.set(entityId, ++count)
+                } else {
+                    entityIdMap.set(entityId, 1)
+                }
+
+                if (count === inputHashes.length) {
+                    snapshot.add(entityId)
+                }
             }
         }
 
-        const snapshot = Object.keys(entityIdMap)
-            .filter(
-                (key: unknown): boolean =>
-                    entityIdMap[key as number] === inputNodes.length
-            )
-            .map((value: unknown): number => value as number)
+        this.QueryGraph.addNode(
+            ...this.createNode({
+                input: false,
+                hash,
+                inputHashes,
+                snapshot
+            })
+        )
 
-        this.QueryGraph[id] = {
-            dependencies: [],
-            id,
-            outputsTo: [],
-            inputsFrom: inputNodes,
-            acceptsInputs: true,
-            snapshot: new Set<number>(snapshot),
-            filters: [],
-            emitter: new EventEmitter<EcsEventMap>()
-        }
+        return hash
+    }
 
-        return id
+    public createNode({
+        input,
+        dependencies,
+        test,
+        snapshot,
+        hash,
+        inputHashes
+    }: {
+        dependencies?: Dependency
+        input: boolean
+        test?: EntityTest
+        snapshot: Set<entityId>
+        hash: INodeId
+        inputHashes?: INodeId[]
+    }): Parameters<IGraph<NodeData>['addNode']> {
+        return [
+            hash,
+            input ? [] : inputHashes,
+            {
+                cache: new LruCache<boolean>(),
+                dependencies: input ? dependencies : [],
+                emitter: new EventEmitter<EcsEventMap>(),
+                test: input ? test : null,
+                snapshot
+            },
+            input
+        ]
     }
 
     public remove(id: number): this {

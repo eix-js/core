@@ -49,7 +49,8 @@ describe('The ecs instance', (): void => {
             ecs.all.flag('test')
 
             expect(
-                Object.values(ecs.ecsGraph.QueryGraph)[0].snapshot
+                Array.from(ecs.ecsGraph.QueryGraph.nodes.values())[0].data
+                    .snapshot
             ).to.include(id)
         })
     })

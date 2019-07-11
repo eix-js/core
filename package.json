@@ -12,6 +12,7 @@
         "lint": "eslint src/**/*.ts",
         "lint:fix": "prettier-eslint \"**/*.ts\" --write",
         "test": "nyc mocha",
+        "test:run": "mocha",
         "coverage": "nyc report --reporter=text-lcov | coveralls",
         "docs": "typedoc --out docs ./src",
         "prebuild": "rimraf dist",
@@ -96,6 +97,7 @@
         "typescript": "^3.4.4"
     },
     "dependencies": {
+        "@eix-js/utils": "0.0.5",
         "ee-ts": "^1.0.1"
     }
 }

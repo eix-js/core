@@ -3,11 +3,9 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, CanBeInfluencedBy, TypedEntity } from './types'
+import { Dependency, TypedEntity, Node } from './types'
 
 export class ComponentExposer<T> {
-    private ecsGraph: EcsGraph
-    private node: QueryGraphNode
     private _snapshot = new Set<TypedEntity<T>>()
 
     /**
@@ -16,21 +14,18 @@ export class ComponentExposer<T> {
      * @param ecsGraph - The source of data.
      * @param node - The node to expose the components of.
      */
-    public constructor(ecsGraph: EcsGraph, node: QueryGraphNode) {
-        this.ecsGraph = ecsGraph
-        this.node = node
-
+    public constructor(public ecsGraph: EcsGraph, public node: Node) {
         for (const id of this.ids()) {
             this.addToSnapshot(id)
         }
 
-        this.node.emitter.on('addEntity', entities => {
+        this.node.data.emitter.on('addEntity', entities => {
             for (const { id } of entities) {
                 this.addToSnapshot(id)
             }
         })
 
-        this.node.emitter.on('removeEntity', entities => {
+        this.node.data.emitter.on('removeEntity', entities => {
             for (const { id } of entities) {
                 this.removeFromSnapshot(id)
             }
@@ -59,16 +54,14 @@ export class ComponentExposer<T> {
     }
 
     public ids(): number[] {
-        return Array.from(this.node.snapshot.values())
+        return Array.from(this.node.data.snapshot.values())
     }
 
     public first(): T {
         return this.snapshot()[0].components
     }
 
-    public each(
-        callback: (entity: T) => boolean | CanBeInfluencedBy | string | void
-    ) {
+    public each(callback: (entity: T) => boolean | Dependency | string | void) {
         for (const { components, id } of this._snapshot.values()) {
             const result = callback(components as T)
 

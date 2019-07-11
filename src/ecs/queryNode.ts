@@ -3,12 +3,15 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { QueryGraphNode, EntityFilterInitter, operator } from './types'
+import { operator, EntityTest, Node } from './types'
 import { ComponentExposer } from './componentExposer'
 
+export interface FilterConfig {
+    name: (componentName: string) => string
+    test: (ecs: EcsGraph, component: string) => EntityTest
+}
+
 export class QueryNode {
-    private ecsGraph: EcsGraph
-    private parent: QueryGraphNode | undefined
     private components: ComponentExposer<unknown> | undefined
 
     public snapshot: Set<number>
@@ -19,12 +22,9 @@ export class QueryNode {
      * @param ecsGraph - The ecsraph object to get data from.
      * @param parent - The parent to inherit snapshots from.
      */
-    public constructor(ecsGraph: EcsGraph, parent?: QueryGraphNode) {
-        this.ecsGraph = ecsGraph
-        this.parent = parent
-
-        if (this.parent) {
-            this.snapshot = this.parent.snapshot
+    public constructor(public ecsGraph: EcsGraph, public source?: Node) {
+        if (this.source) {
+            this.snapshot = this.source.data.snapshot
         } else {
             this.snapshot = new Set<number>()
         }
@@ -79,33 +79,33 @@ export class QueryNode {
         )
     }
 
-    public pipe(
-        filter: EntityFilterInitter,
-        ...components: string[]
-    ): QueryNode {
+    public pipe(filter: FilterConfig, ...components: string[]): QueryNode {
         const ids = components.map((component: string): number =>
             this.ecsGraph.addInputNodeToQueryGraph({
-                name: filter.name(component),
+                key: filter.name(component),
                 test: filter.test(this.ecsGraph, component),
-                dependencies: [component],
-                lastValues: {}
+                dependencies: [component]
             })
         )
 
-        if (this.parent && !ids.includes(this.parent.id)) {
-            ids.push(this.parent.id)
+        // This is here to allow chaining:
+        // eg: ecs.all.flag('foo').where('bar','==','5') ...
+        // However, i can't do it all the times
+        // because ecs.all.doesn't have a source
+        if (this.source && !ids.includes(this.source.id)) {
+            ids.push(this.source.id)
         }
 
         if (ids.length === 1) {
             return new QueryNode(
                 this.ecsGraph,
-                this.ecsGraph.QueryGraph[ids[0]]
+                this.ecsGraph.QueryGraph.get(ids[0])
             )
         } else if (ids.length > 1) {
             const complexNode = this.ecsGraph.addComplexNode(ids[0], ids[1])
             const queryNode = new QueryNode(
                 this.ecsGraph,
-                this.ecsGraph.QueryGraph[complexNode]
+                this.ecsGraph.QueryGraph.get(complexNode)
             )
 
             if (ids.length === 2) {
@@ -119,7 +119,7 @@ export class QueryNode {
     }
 
     public get<T>(): ComponentExposer<T> {
-        if (!this.parent) {
+        if (!this.source) {
             throw new Error('Cannot get component on query node with no parent')
         }
 
@@ -127,7 +127,7 @@ export class QueryNode {
             return this.components as ComponentExposer<T>
         }
 
-        this.components = new ComponentExposer<T>(this.ecsGraph, this.parent)
+        this.components = new ComponentExposer<T>(this.ecsGraph, this.source)
         return this.components as ComponentExposer<T>
     }
 }

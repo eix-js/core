@@ -35,6 +35,6 @@ export class Ecs {
     }
 
     public get count(): number {
-        return Object.keys(this.ecsGraph.entities).length
+        return this.ecsGraph.allEntities.length
     }
 }

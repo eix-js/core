@@ -2,8 +2,9 @@
  * @module Types
  */
 
-import { EcsGraph } from './ecsGraph'
+import { LruCache } from '@eix-js/utils'
 import { EventEmitter } from 'ee-ts'
+import { IGraphNode } from '../modules/graph/classes/IGraph'
 
 /**
  * @description options to be passed to the constructor of the main ecs class
@@ -11,6 +12,7 @@ import { EventEmitter } from 'ee-ts'
 export interface EcsOptions {
     setComponentOnUpdate: boolean
     addComponentsIfTheyDontExist: boolean
+    cacheSize: number
 }
 
 export interface TypedEntity<T> {
@@ -24,50 +26,34 @@ export type UnTypedComponents = Record<string, unknown>
  * @description The base interface for entities used by the ecs class
  */
 export type Entity = TypedEntity<UnTypedComponents>
-
 export type EntityTest = (id: number) => boolean
 
 /**
  * @description Basic interface for filters
  */
 export interface EntityFilter {
-    name: string
+    hash: number
     test: EntityTest
-    dependencies: CanBeInfluencedBy
-    lastValues: Record<number, boolean>
+    cache: LruCache<boolean>
 }
 
 export interface EntityFilterInitter {
-    name: (componentName: string) => string
-    test: (ecs: EcsGraph, component: string) => (id: number) => boolean
+    dependencies: Dependency
+    key: string
+    test: (id: number) => boolean
 }
 
 export type EcsEventMap = Record<ecsEvent, (entity: Entity[]) => void>
 
-export interface HasInputs {
-    inputsFrom: number[]
-}
-
 /**
  * @description The base graph node used by the computation graph of the ecs class.
  */
-export interface QueryGraphNode extends HasInputs {
-    dependencies: CanBeInfluencedBy
-    id: number
-    outputsTo: number[]
-    acceptsInputs: boolean
+export interface NodeData {
+    dependencies: Dependency
     snapshot: Set<number>
-    filters: EntityFilter[]
+    test: EntityTest
+    cache: LruCache<boolean>
     emitter: EventEmitter<EcsEventMap>
-}
-
-/**
- * @description The base graph node used by the computation graph of the ecs class.
- */
-export interface QueryGraphComplexNode extends QueryGraphNode {
-    dependencies: []
-    acceptsInputs: true
-    filters: []
 }
 
 /**
@@ -82,7 +68,7 @@ export type ecsEvent =
 /**
  * @description What components a filter / node needs to re-calculate on the change of.
  */
-export type CanBeInfluencedBy = string[] | '*'
+export type Dependency = string[] | '*' | null
 
 export interface Event {
     name: ecsEvent
@@ -93,3 +79,5 @@ export interface Event {
  * @description Operators wich can be based to .where
  */
 export type operator = '==' | '!='
+
+export type Node = IGraphNode<NodeData>
