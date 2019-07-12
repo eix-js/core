@@ -1,4 +1,5 @@
-import { setToArray, removeDuplicates } from '../../../ecs/utils'
+import { setToArray } from '../../ecs/helpers/setToArray'
+import { removeDuplicates } from '../../ecs/helpers/removeDuplicates'
 
 // Graph with inputs
 

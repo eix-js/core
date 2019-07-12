@@ -3,7 +3,10 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { Dependency, TypedEntity, Node } from './types'
+import { TypedEntity, Entity } from '../types/Entity'
+import { Node } from '../types/NodeData'
+import { Dependency } from '../types/Dependency'
+import { eventCodes } from '../constants'
 
 export class ComponentExposer<T> {
     private _snapshot = new Set<TypedEntity<T>>()
@@ -19,13 +22,13 @@ export class ComponentExposer<T> {
             this.addToSnapshot(id)
         }
 
-        this.node.data.emitter.on('addEntity', entities => {
+        this.node.data.emitter.on(eventCodes.addEntity, entities => {
             for (const { id } of entities) {
                 this.addToSnapshot(id)
             }
         })
 
-        this.node.data.emitter.on('removeEntity', entities => {
+        this.node.data.emitter.on(eventCodes.removeEntity, entities => {
             for (const { id } of entities) {
                 this.removeFromSnapshot(id)
             }
@@ -62,6 +65,8 @@ export class ComponentExposer<T> {
     }
 
     public each(callback: (entity: T) => boolean | Dependency | string | void) {
+        const events: Entity[] = []
+
         for (const { components, id } of this._snapshot.values()) {
             const result = callback(components as T)
 
@@ -89,11 +94,13 @@ export class ComponentExposer<T> {
                     }
                 }
 
-                this.ecsGraph.handleEvent('updateComponents', {
+                events.push({
                     id,
                     components: changedComponents
                 })
             }
         }
+
+        this.ecsGraph.handleEvent(0b100, ...events)
     }
 }

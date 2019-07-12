@@ -3,8 +3,10 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { operator, EntityTest, Node } from './types'
 import { ComponentExposer } from './componentExposer'
+import { EntityTest } from '../types/EntityTest'
+import { Node } from '../types/NodeData'
+import { Operator } from '../types/Operator'
 
 export interface FilterConfig {
     name: (componentName: string) => string
@@ -32,7 +34,7 @@ export class QueryNode {
 
     public where<S>(
         component: string,
-        operator: operator,
+        operator: Operator,
         value: S
     ): QueryNode {
         return this.pipe(

@@ -1,6 +1,6 @@
 import { entityId } from '../../ecs/types/entityId'
 import { INodeId } from './IGraph'
-import { setToArray } from '../../../ecs/utils'
+import { setToArray } from '../../ecs/helpers/setToArray'
 
 export class InfluenceTable {
     private map = new Map<entityId, Set<INodeId>>()

@@ -3,8 +3,9 @@
  */
 
 import { EcsGraph } from './ecsGraph'
-import { EcsOptions } from './types'
 import { QueryNode } from './queryNode'
+import { EcsOptions } from '../types/EcsOptions'
+import { eventCodes } from '../constants'
 
 export class Ecs {
     public ecsGraph: EcsGraph
@@ -21,15 +22,25 @@ export class Ecs {
     }
 
     public addEntity<T>(components: T): number {
-        const id = this.ecsGraph.addEntity()
+        const id = this.ecsGraph.getId()
 
-        this.ecsGraph.addComponentTo(id, components as Record<string, unknown>)
+        this.ecsGraph.handleEvent(
+            // those are numbers so we can just add them,
+            eventCodes.addEntity + eventCodes.addComponents,
+            {
+                id,
+                components
+            }
+        )
 
         return id
     }
 
     public removeEntity(id: number): this {
-        this.ecsGraph.remove(id)
+        this.ecsGraph.handleEvent(eventCodes.removeEntity, {
+            id,
+            components: {}
+        })
 
         return this
     }

@@ -2,31 +2,23 @@
  * @module EcsGraph
  */
 
-import { EventEmitter } from 'ee-ts'
-
-import {
-    EcsOptions,
-    Entity,
-    NodeData,
-    ecsEvent,
-    UnTypedComponents,
-    EcsEventMap,
-    EntityFilterInitter,
-    Dependency,
-    EntityTest
-} from './types'
-import { defaultEcsOptions, defaultEntity } from './defaultEcsOptions'
-import {
-    nodeNeedsUpdate,
-    compareArrays,
-    addEntityToSnapshot,
-    removeEntityFromSnapshot,
-    setToArray
-} from './utils'
-import { IGraph, IGraphNode, INodeId } from '../modules/graph/classes/IGraph'
+import { defaultEcsOptions } from '../constants'
+import { IGraph, IGraphNode, INodeId } from '../../graph/classes/IGraph'
 import { hashCode, LruCache } from '@eix-js/utils'
-import { InfluenceTable } from '../modules/graph/classes/InfluenceTable'
-import { entityId } from '../modules/ecs/types/entityId'
+import { InfluenceTable } from '../../graph/classes/InfluenceTable'
+import { entityId } from '../types/entityId'
+import { Entity } from '../types/Entity'
+import { ecsEvent } from '../types/entityEvent'
+import { BitFieldEmitter } from './BitFieldEmitter'
+import { EcsOptions } from '../types/EcsOptions'
+import { NodeData } from '../types/NodeData'
+import { EntityFilterInitter, EntityTest } from '../types/EntityTest'
+import { Dependency } from '../types/Dependency'
+import { removeEntityFromSnapshot } from '../helpers/removeEntityFromSnapshot'
+import { addEntityToSnapshot } from '../helpers/addEntityToSnapshot'
+import { nodeNeedsUpdate } from '../helpers/nodeNeedsUpdate'
+import { setToArray } from '../helpers/setToArray'
+import { compareArrays } from '../helpers/compareArrays'
 
 export class EcsGraph {
     /**
@@ -38,6 +30,11 @@ export class EcsGraph {
      * @description The options passed to the ecs constructor.
      */
     public options: EcsOptions
+
+    /**
+     * @description The number of events propagated
+     */
+    public eventCount = 0
 
     /**
      * @description Object holding all entities.
@@ -54,7 +51,7 @@ export class EcsGraph {
      */
     public QueryGraph = new IGraph<NodeData>()
 
-    public emitter = new EventEmitter<EcsEventMap>()
+    public emitter = new BitFieldEmitter<Entity[]>(4)
 
     public constructor(options: Partial<EcsOptions> = {}) {
         const result = { ...defaultEcsOptions, ...options }
@@ -63,35 +60,38 @@ export class EcsGraph {
     }
 
     /**
-     * @description Used to add an entity to the ecs.
+     * @description Used to generate an unque id
      *
-     * @returns The id of the new entity.
+     * @returns The new id.
      */
-    public addEntity(): number {
+    public getId(): number {
         const id = this.lastId++
-
-        this.handleEvent('addEntity', { ...defaultEntity, id })
 
         return id
     }
 
     private updateComplexNode(
         entityId: number,
-        node: IGraphNode<NodeData>
+        node: IGraphNode<NodeData>,
+        estimation = true
     ): this {
         if (node && !node.input) {
-            let shouldAddEntity = true
+            if (node.data.snapshot.has(entityId) && !estimation) {
+                node.data.snapshot.delete(entityId)
+            } else if (estimation !== false) {
+                let shouldAddEntity = true
 
-            for (const inputNode of node.previous) {
-                if (!inputNode.data.snapshot.has(entityId)) {
-                    removeEntityFromSnapshot(entityId, node)
-                    shouldAddEntity = false
-                    break
+                for (const inputNode of node.previous) {
+                    if (!inputNode.data.snapshot.has(entityId)) {
+                        removeEntityFromSnapshot(entityId, node)
+                        shouldAddEntity = false
+                        break
+                    }
                 }
-            }
 
-            if (shouldAddEntity) {
-                addEntityToSnapshot(entityId, node)
+                if (shouldAddEntity) {
+                    addEntityToSnapshot(entityId, node)
+                }
             }
         }
 
@@ -124,13 +124,19 @@ export class EcsGraph {
                     addEntityToSnapshot(entityId, node)
                 }
 
-                for (const outputNode of node.next) {
-                    nodesToUpdate.add(outputNode)
+                if (this.options.bulkNodeEventPropagation) {
+                    for (const outputNode of node.next) {
+                        nodesToUpdate.add(outputNode)
+                    }
+                } else {
+                    for (const outputNode of node.next) {
+                        this.updateComplexNode(entityId, outputNode, testResult)
+                    }
                 }
             }
         }
 
-        if (nodesToUpdate.size) {
+        if (this.options.bulkNodeEventPropagation && nodesToUpdate.size) {
             for (const node of nodesToUpdate.values()) {
                 this.updateComplexNode(entityId, node)
             }
@@ -163,110 +169,87 @@ export class EcsGraph {
     /**
      * @description Used to handle an event.
      *
-     * @param name - The name of the event.
+     * @param bits - The name of the event.
      * @param entities - The ids to use to handle the event.
      * @returns The ecs instance.
      */
-    public handleEvent(name: ecsEvent, ...entities: Entity[]): this {
-        switch (name) {
-            case 'addEntity':
-                for (const entity of entities) {
-                    this.entities[entity.id] = {
-                        id: entity.id,
-                        components: {}
-                    }
+    public handleEvent(bits: ecsEvent, ...entities: Entity[]): this {
+        if (this.options.countEvents) this.eventCount++
 
-                    this.infulenceTable.addInput(entity.id)
-
-                    this.handleEvent('addComponents', entity)
+        if (bits & 1) {
+            // addEntity
+            for (const entity of entities) {
+                this.entities[entity.id] = entity
+                this.infulenceTable.addInput(entity.id)
+            }
+        }
+        if ((bits >> 1) & 1) {
+            // addComponents
+            for (const entity of entities) {
+                // Thus merges the compoennts
+                this.entities[entity.id].components = {
+                    ...this.entities[entity.id].components,
+                    ...entity.components
                 }
-                break
-            case 'addComponents':
-                for (const entity of entities) {
-                    // Thus merges the compoennts
-                    this.entities[entity.id].components = {
-                        ...this.entities[entity.id].components,
-                        ...entity.components
-                    }
 
-                    const componentKeys = Object.keys(entity.components)
-                    if (componentKeys.length) {
-                        this.updateInfluenceTable(entity.id, ...componentKeys)
-                    }
+                const componentKeys = Object.keys(entity.components)
+                if (componentKeys.length) {
+                    this.updateInfluenceTable(entity.id, ...componentKeys)
                 }
-                break
-            case 'updateComponents':
-                for (const entity of entities) {
-                    const componentKeys = Object.keys(entity.components)
+            }
+        }
+        if ((bits >> 2) & 1) {
+            // updateComponents
+            for (const entity of entities) {
+                const componentKeys = Object.keys(entity.components)
 
-                    const entityRef = this.entities[entity.id]
+                const entityRef = this.entities[entity.id]
 
-                    if (entityRef) {
-                        for (const key of componentKeys) {
-                            if (
-                                this.options.addComponentsIfTheyDontExist &&
-                                entityRef.components[key] === undefined
-                            ) {
-                                this.handleEvent('addComponents', {
-                                    id: entity.id,
-                                    components: {
-                                        [key]: entity.components[key]
-                                    }
-                                })
-                            }
+                if (entityRef) {
+                    for (const key of componentKeys) {
+                        if (
+                            this.options.addComponentsIfTheyDontExist &&
+                            entityRef.components[key] === undefined
+                        ) {
+                            this.handleEvent(0b10, {
+                                id: entity.id,
+                                components: {
+                                    [key]: entity.components[key]
+                                }
+                            })
+                        }
 
-                            if (this.options.setComponentOnUpdate) {
-                                entityRef.components[key] =
-                                    entity.components[key]
-                            }
+                        if (this.options.setComponentOnUpdate) {
+                            entityRef.components[key] = entity.components[key]
                         }
                     }
-
-                    if (componentKeys.length) {
-                        this.updateInputNodes(entity.id, ...componentKeys)
-                    }
                 }
-                break
-            case 'removeEntity':
-                for (const { id } of entities) {
-                    const influences = this.infulenceTable.getArray(id)
 
-                    // this is recurisve so i made a different function
-                    const children = this.QueryGraph.getNodesChildren(
-                        this.QueryGraph.getBulk(...influences)
-                    )
-
-                    for (const child of children) {
-                        removeEntityFromSnapshot(id, child)
-                    }
-
-                    this.infulenceTable.removeInput(id)
-                    delete this.entities[id]
+                if (componentKeys.length) {
+                    this.updateInputNodes(entity.id, ...componentKeys)
                 }
-            default:
-                break
+            }
+        }
+        if ((bits >> 3) & 1) {
+            // removeEntity
+            for (const { id } of entities) {
+                const influences = this.infulenceTable.getArray(id)
+
+                // this is recurisve so i made a different function
+                const children = this.QueryGraph.getNodesChildren(
+                    this.QueryGraph.getBulk(...influences)
+                )
+
+                for (const child of children) {
+                    removeEntityFromSnapshot(id, child)
+                }
+
+                this.infulenceTable.removeInput(id)
+                delete this.entities[id]
+            }
         }
 
-        this.emitter.emit(name, entities)
-
-        return this
-    }
-
-    /**
-     * @description Adds a component to an entity.
-     *
-     * @param id - The id of the entity.
-     * @param components - The components to add to the ecs.
-     * @returns The ecs instance.
-     */
-    public addComponentTo<T extends UnTypedComponents>(
-        id: number,
-        components: T
-    ): this {
-        this.handleEvent('addComponents', {
-            id: id,
-            components
-        })
+        this.emitter.emit(bits, entities)
 
         return this
     }
@@ -387,21 +370,12 @@ export class EcsGraph {
             {
                 cache: new LruCache<boolean>(),
                 dependencies: input ? dependencies : [],
-                emitter: new EventEmitter<EcsEventMap>(),
+                emitter: new BitFieldEmitter<Entity[]>(4),
                 test: input ? test : null,
                 snapshot
             },
             input
         ]
-    }
-
-    public remove(id: number): this {
-        this.handleEvent('removeEntity', {
-            id,
-            components: {}
-        })
-
-        return this
     }
 
     public get allEntities() {

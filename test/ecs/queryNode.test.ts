@@ -1,4 +1,4 @@
-import { QueryNode, Ecs, ComponentExposer } from '../../src'
+import { QueryNode, Ecs, ComponentExposer, eventCodes } from '../../src'
 import { expect } from 'chai'
 import { random } from '../utils/random'
 
@@ -55,7 +55,7 @@ describe('The queryNode instance', () => {
             })
 
             it('shoudnt change anything when updating a component wich isnt flagged', () => {
-                ecs.ecsGraph.handleEvent('updateComponents', {
+                ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                     id,
                     components: {
                         prop: 8
@@ -66,7 +66,7 @@ describe('The queryNode instance', () => {
             })
 
             it('should change when updating a flagged component', () => {
-                ecs.ecsGraph.handleEvent('updateComponents', {
+                ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                     id,
                     components: {
                         flag: false
@@ -79,7 +79,7 @@ describe('The queryNode instance', () => {
                     flag: false
                 })
 
-                ecs.ecsGraph.handleEvent('updateComponents', {
+                ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                     id,
                     components: {
                         flag: true
@@ -144,7 +144,7 @@ describe('The queryNode instance', () => {
                     // flag2: false
                 })
 
-                ecs.ecsGraph.handleEvent('updateComponents', {
+                ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                     id,
                     components: {
                         flag: true,
@@ -160,7 +160,7 @@ describe('The queryNode instance', () => {
                     flag: true
                 })
 
-                ecs.ecsGraph.handleEvent('updateComponents', {
+                ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                     id,
                     components: {
                         flag: false,

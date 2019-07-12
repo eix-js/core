@@ -1,8 +1,6 @@
-import { Ecs } from '../../src/ecs/ecs'
+import { Ecs, Entity, eventCodes } from '../../src'
 import { expect } from 'chai'
 import { random } from '../utils/random'
-import { Entity } from '../../src'
-
 describe('The ecs instance', (): void => {
     let ecs: Ecs
 
@@ -86,7 +84,7 @@ describe('The ecs instance', (): void => {
         it('should set the components when reciving the events', () => {
             const newValue = random(10, 100)
 
-            ecs.ecsGraph.handleEvent('updateComponents', {
+            ecs.ecsGraph.handleEvent(eventCodes.updateComponents, {
                 id,
                 components: {
                     prop: newValue
@@ -102,7 +100,7 @@ describe('The ecs instance', (): void => {
                 .get<{ prop: number }>()
 
             const promise = new Promise<Entity[]>(res => {
-                ecs.ecsGraph.emitter.one('updateComponents', res)
+                ecs.ecsGraph.emitter.on(eventCodes.updateComponents, res)
             })
 
             entities.each(entity => {
