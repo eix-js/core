@@ -1,0 +1,2 @@
+* linguist-vendored
+*.{ts,html,scss,json} linguist-vendored=false
