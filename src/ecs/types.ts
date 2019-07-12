@@ -78,6 +78,6 @@ export interface Event {
 /**
  * @description Operators wich can be based to .where
  */
-export type operator = '==' | '!='
+export type operator = '==' | '!=' | '>' | '>=' | '<' | '<='
 
 export type Node = IGraphNode<NodeData>

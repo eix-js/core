@@ -43,16 +43,26 @@ export class QueryNode {
                     ecs: EcsGraph,
                     componentName: string
                 ): ((id: number) => boolean) => (id: number): boolean => {
+                    const component = ecs.entities[id].components[
+                        componentName
+                    ] as S
+
                     if (operator === '==') {
-                        return (
-                            ecs.entities[id].components[componentName] === value
-                        )
+                        return component === value
                     } else if (operator === '!=') {
-                        return (
-                            ecs.entities[id].components[componentName] !== value
-                        )
+                        return component !== value
                     } else {
-                        return true
+                        if (operator === '<') {
+                            return component < value
+                        } else if (operator === '<=') {
+                            return component <= value
+                        } else if (operator === '>') {
+                            return component > value
+                        } else if (operator === '>=') {
+                            return component >= value
+                        } else {
+                            return true
+                        }
                     }
                 }
             },

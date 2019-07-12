@@ -224,5 +224,121 @@ describe('The queryNode instance', () => {
                 expect(entities.ids()).to.include(id)
             })
         })
+
+        describe('The < operator', () => {
+            let ecs: Ecs
+            let entities: ComponentExposer<{ foo: number }>
+
+            beforeEach(() => {
+                ecs = new Ecs()
+                entities = ecs.all.where('foo', '<', 7).get()
+            })
+
+            it('should query entities where the expression is true', () => {
+                ecs.addEntity({
+                    foo: 6
+                })
+
+                expect(entities.ids().length).to.equal(1)
+            })
+
+            it("should't query entities where the expression isn't true", () => {
+                ecs.addEntity({
+                    foo: 7
+                })
+                ecs.addEntity({
+                    foo: 8
+                })
+
+                expect(entities.ids()).to.have.length(0)
+            })
+        })
+
+        describe('The > operator', () => {
+            let ecs: Ecs
+            let entities: ComponentExposer<{ foo: number }>
+
+            beforeEach(() => {
+                ecs = new Ecs()
+                entities = ecs.all.where('foo', '>', 7).get()
+            })
+
+            it('should query entities where the expression is true', () => {
+                ecs.addEntity({
+                    foo: 8
+                })
+
+                expect(entities.ids()).to.have.length(1)
+            })
+
+            it("should't query entities where the expression isn't true", () => {
+                ecs.addEntity({
+                    foo: 7
+                })
+                ecs.addEntity({
+                    foo: 6
+                })
+
+                expect(entities.ids()).to.have.length(0)
+            })
+        })
+
+        describe('The <= operator', () => {
+            let ecs: Ecs
+            let entities: ComponentExposer<{ foo: number }>
+
+            beforeEach(() => {
+                ecs = new Ecs()
+                entities = ecs.all.where('foo', '<=', 7).get()
+            })
+
+            it('should query entities where the expression is true', () => {
+                ecs.addEntity({
+                    foo: 6
+                })
+                ecs.addEntity({
+                    foo: 7
+                })
+
+                expect(entities.ids()).to.have.length(2)
+            })
+
+            it("should't query entities where the expression isn't true", () => {
+                ecs.addEntity({
+                    foo: 8
+                })
+
+                expect(entities.ids()).to.have.length(0)
+            })
+        })
+
+        describe('The >= operator', () => {
+            let ecs: Ecs
+            let entities: ComponentExposer<{ foo: number }>
+
+            beforeEach(() => {
+                ecs = new Ecs()
+                entities = ecs.all.where('foo', '>=', 7).get()
+            })
+
+            it('should query entities where the expression is true', () => {
+                ecs.addEntity({
+                    foo: 8
+                })
+                ecs.addEntity({
+                    foo: 7
+                })
+
+                expect(entities.ids()).to.have.length(2)
+            })
+
+            it("should't query entities where the expression isn't true", () => {
+                ecs.addEntity({
+                    foo: 6
+                })
+
+                expect(entities.ids()).to.have.length(0)
+            })
+        })
     })
 })
