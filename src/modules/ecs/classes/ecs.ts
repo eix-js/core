@@ -6,6 +6,7 @@ import { EcsGraph } from './ecsGraph'
 import { QueryNode } from './queryNode'
 import { EcsOptions } from '../types/EcsOptions'
 import { eventCodes } from '../constants'
+import { UnTypedComponents } from '../types/Entity'
 
 export class Ecs {
     public ecsGraph: EcsGraph
@@ -29,7 +30,7 @@ export class Ecs {
             eventCodes.addEntity + eventCodes.addComponents,
             {
                 id,
-                components
+                components: components as UnTypedComponents
             }
         )
 
