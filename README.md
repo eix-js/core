@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/eix-js/core.svg)](https://travis-ci.com/eix-js/core) [![License](https://img.shields.io/github/license/eix-js/core.svg)](https://github.com/eix-js/core/blob/master/LICENSE.md) [![Version](https://img.shields.io/github/package-json/v/eix-js/core.svg)](https://github.com/eix-js/core)
+[![Build Status](https://img.shields.io/travis/eix-js/core.svg)](https://travis-ci.com/eix-js/core) [![License](https://img.shields.io/github/license/eix-js/core.svg)](https://github.com/eix-js/core/blob/master/LICENSE.md) [![Version](https://img.shields.io/github/package-json/v/eix-js/core.svg)](https://github.com/eix-js/core) [![Minzipped size size](https://badgen.net/bundlephobia/minzip/@eix-js/core)](https://bundlephobia.com/result?p=@eix-js/core@latest)
 
 # Eix-core
 the core of the eix game engine
